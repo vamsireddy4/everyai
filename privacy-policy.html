@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy | EveryAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script async crossorigin="anonymous"
+        data-clerk-publishable-key="pk_test_YXdha2UtaHllbmEtNzAuY2xlcmsuYWNjb3VudHMuZGV2JA"
+        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
+    <style>
+        .legal-content {
+            padding: 160px 20px 80px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .legal-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .legal-header h1 {
+            font-family: var(--font-head);
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-1) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .last-updated {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .legal-body {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 48px;
+            box-shadow: var(--shadow-lg);
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .legal-section {
+            margin-bottom: 40px;
+        }
+
+        .legal-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .legal-section h2 {
+            font-family: var(--font-head);
+            color: var(--text-primary);
+            font-size: 1.75rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .legal-section h2::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: var(--accent-1);
+            border-radius: 2px;
+        }
+
+        .legal-section p {
+            margin-bottom: 20px;
+        }
+
+        .legal-section ul {
+            margin-bottom: 20px;
+            padding-left: 24px;
+        }
+
+        .legal-section li {
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .legal-body {
+                padding: 32px 24px;
+            }
+
+            .legal-content {
+                padding-top: 120px;
+            }
+        }
+    </style>
+</head>
+
+<body id="body">
+    <!-- Premium Background Elements -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar scrolled" id="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">Every<span class="logo-accent">AI</span></span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="blogs.html" class="nav-link">Blogs</a></li>
+                <li><a href="prompts.html" class="nav-link">Prompts</a></li>
+                <li><a href="index.html#partnership" class="nav-link">PartnerShip</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="theme-toggle">
+                        <input type="checkbox" id="theme-toggle" />
+                        <div class="slider-round">
+                            <div class="knob"></div>
+                        </div>
+                    </label>
+                </div>
+                <a href="submit.html" class="btn-primary">Submit Tool</a>
+                <button id="sign-in-btn" class="btn-login" style="display: none;">Login</button>
+                <div id="user-button"></div>
+            </div>
+
+            <button class="hamburger" id="hamburger">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <main class="legal-content">
+        <div class="legal-header">
+            <h1>Privacy Policy</h1>
+            <p class="last-updated">Last Updated: February 24, 2026</p>
+        </div>
+
+        <div class="legal-body">
+            <div class="legal-section">
+                <h2>Introduction</h2>
+                <p>Welcome to EveryAI. We respect your privacy and are committed to protecting your personal data. This
+                    privacy policy will inform you about how we look after your personal data when you visit our website
+                    and tell you about your privacy rights and how the law protects you.</p>
+            </div>
+
+            <div class="legal-section">
+                <h2>Data We Collect</h2>
+                <p>We may collect, use, store and transfer different kinds of personal data about you which we have
+                    grouped together as follows:</p>
+                <ul>
+                    <li><strong>Identity Data:</strong> includes first name, last name, username or similar identifier.
+                    </li>
+                    <li><strong>Contact Data:</strong> includes email address and social media handles.</li>
+                    <li><strong>Technical Data:</strong> includes internet protocol (IP) address, your login data,
+                        browser type and version, time zone setting and location.</li>
+                    <li><strong>Usage Data:</strong> includes information about how you use our website, products and
+                        services.</li>
+                </ul>
+            </div>
+
+            <div class="legal-section">
+                <h2>How We Use Your Data</h2>
+                <p>We will only use your personal data when the law allows us to. Most commonly, we will use your
+                    personal data in the following circumstances:</p>
+                <ul>
+                    <li>To register you as a new user or submit a tool.</li>
+                    <li>To manage our relationship with you.</li>
+                    <li>To improve our website, services, and marketing.</li>
+                    <li>To deliver relevant website content to you.</li>
+                </ul>
+            </div>
+
+            <div class="legal-section">
+                <h2>Data Security</h2>
+                <p>We have put in place appropriate security measures to prevent your personal data from being
+                    accidentally lost, used or accessed in an unauthorized way, altered or disclosed. In addition, we
+                    limit access to your personal data to those employees, agents, contractors and other third parties
+                    who have a business need to know.</p>
+            </div>
+
+            <div class="legal-section">
+                <h2>Your Legal Rights</h2>
+                <p>Under certain circumstances, you have rights under data protection laws in relation to your personal
+                    data, including the right to request access, correction, erasure, restriction, transfer, or to
+                    object to processing.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <a href="index.html" class="logo">
+                        <span class="logo-icon">⚡</span>
+                        <span class="logo-text">Every<span class="logo-accent">AI</span></span>
+                    </a>
+                    <p class="footer-tagline">The ultimate directory of AI-powered tools and apps.</p>
+                </div>
+
+                <div class="footer-links-group">
+                    <h4>Directory</h4>
+                    <a href="index.html#apps">All Tools</a>
+                    <a href="categories.html">All Categories</a>
+                    <a href="submit.html">Submit App</a>
+                    <a href="admin.html">Admin Dashboard</a>
+                </div>
+
+                <div class="footer-links-group">
+                    <h4>Company</h4>
+                    <a href="about.html">About</a>
+                    <a href="blogs.html">Blog</a>
+                    <a href="#">Contact</a>
+                </div>
+
+                <div class="footer-links-group">
+                    <h4>Legal</h4>
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-of-service.html">Terms of Service</a>
+                    <a href="cookie-policy.html">Cookie Policy</a>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>© 2026 EveryAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="app.js"></script>
+</body>
+
+</html>

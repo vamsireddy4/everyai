@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Generation Guide | EveryAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script async crossorigin="anonymous"
+        data-clerk-publishable-key="pk_test_YXdha2UtaHllbmEtNzAuY2xlcmsuYWNjb3VudHMuZGV2JA"
+        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
+    <style>
+        .post-page {
+            padding: 140px 20px 80px;
+            background: var(--bg-base);
+            min-height: 100vh;
+        }
+
+        .post-container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: var(--bg-surface);
+            padding: 60px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        @media (max-width: 768px) {
+            .post-container {
+                padding: 30px 20px;
+            }
+        }
+
+        /* ── Header ── */
+        .post-header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .post-title {
+            font-family: var(--font-head);
+            font-size: 3.5rem;
+            line-height: 1.2;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        /* ── Content ── */
+        .post-body {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+
+        .post-body p {
+            margin-bottom: 25px;
+        }
+
+        .post-body .intro-text {
+            color: var(--text-secondary);
+        }
+
+        .post-body .intro-text span {
+            font-style: italic;
+            opacity: 0.9;
+        }
+
+        .post-body h2 {
+            font-family: var(--font-head);
+            font-size: 2.5rem;
+            color: var(--text-primary);
+            margin: 50px 0 20px;
+            font-weight: 800;
+        }
+
+        .post-body h3 {
+            font-family: var(--font-head);
+            font-size: 1.8rem;
+            color: var(--text-primary);
+            margin: 40px 0 15px;
+            font-weight: 700;
+        }
+
+        .post-body ul {
+            margin-bottom: 25px;
+            padding-left: 20px;
+            list-style-type: disc;
+        }
+
+        .post-body ul ul {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            list-style-type: circle;
+        }
+
+        .post-body li {
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* ── Light Mode Specifics ── */
+        body.light .post-container {
+            background: #ffffff;
+        }
+    </style>
+</head>
+
+<body id="body">
+    <!-- ── Navbar ── -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="logo" id="logo-link">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">Every<span class="logo-accent">AI</span></span>
+            </a>
+
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="blogs.html" class="nav-link">Blogs</a></li>
+                <li><a href="prompts.html" class="nav-link">Prompts</a></li>
+                <li><a href="#" class="nav-link">PartnerShip</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="theme-toggle" aria-label="Toggle theme">
+                        <input type="checkbox" id="theme-toggle" />
+                        <div class="slider-round">
+                            <div class="knob"></div>
+                        </div>
+                    </label>
+                </div>
+                <a href="submit.html" class="btn-primary">Submit Tool</a>
+                <button id="sign-in-btn" class="btn-login" style="display: none;">Login</button>
+                <div id="user-button"></div>
+            </div>
+
+            <button class="hamburger" id="hamburger" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ── Mobile Menu ── -->
+    <div class="mobile-menu" id="mobile-menu">
+        <a href="index.html" class="mobile-link">Home</a>
+        <a href="about.html" class="mobile-link">About</a>
+        <a href="blogs.html" class="mobile-link">Blogs</a>
+        <a href="prompts.html" class="mobile-link">Prompts</a>
+        <a href="#" class="mobile-link">PartnerShip</a>
+        <div id="mobile-user-button"></div>
+        <button id="mobile-sign-in-btn" class="mobile-link" style="display: none;">Login</button>
+        <a href="submit.html" class="btn-primary mobile-cta">Submit Tool</a>
+    </div>
+
+    <main class="post-page">
+        <article class="post-container" id="post-content">
+            <header class="post-header">
+                <h1 class="post-title">Prompt Generation Guide</h1>
+            </header>
+
+            <div class="post-body">
+                <p class="intro-text">
+                    In this guide, you'll learn to create prompts that give you the desired result. 💡
+                    <span>After reading this short guide you'll be able to create prompts for Landing pages, Blogs,
+                        Tweets, Facebook ads, Social Media Posts, Cold Emails, Marketing Emails, Persona building & lots
+                        more.</span>
+                </p>
+
+                <h2>What is prompt?</h2>
+                <p>A series of written instructions in natural language that is understood by AI to output the intended
+                    response for your use.</p>
+
+                <p>There are different types of modifiers as discussed below</p>
+
+                <h3>Length 📏</h3>
+                <ul>
+                    <li>Specifies the length or word count of the output</li>
+                    <li><strong>Example:</strong>
+                        <ul>
+                            <li>A sentence</li>
+                            <li>A two-line</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </article>
+    </main>
+
+    <!-- ── Footer ── -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <a href="index.html" class="logo">
+                        <span class="logo-icon">⚡</span>
+                        <span class="logo-text">Every<span class="logo-accent">AI</span></span>
+                    </a>
+                    <p class="footer-tagline">The ultimate directory of AI-powered tools and apps.</p>
+                    <div class="footer-socials">
+                        <a href="#" class="social-link" aria-label="Twitter">𝕏</a>
+                        <a href="#" class="social-link" aria-label="LinkedIn">in</a>
+                        <a href="#" class="social-link" aria-label="GitHub">⌥</a>
+                    </div>
+                </div>
+
+                <div class="footer-links-group">
+                    <h4>Directory</h4>
+                    <a href="index.html#apps">All Tools</a>
+                    <a href="categories.html">All Categories</a>
+                    <a href="submit.html">Submit App</a>
+                    <a href="admin.html">Admin Dashboard</a>
+                </div>
+
+                <div class="footer-links-group">
+                    <h4>Company</h4>
+                    <a href="about.html">About</a>
+                    <a href="#">Blog</a>
+                    <a href="#">Press</a>
+                    <a href="#">Contact</a>
+                </div>
+
+                <div class="footer-links-group">
+                    <h4>Legal</h4>
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-of-service.html">Terms of Service</a>
+                    <a href="cookie-policy.html">Cookie Policy</a>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>© 2026 EveryAI. All rights reserved.</p>
+                <p>Built with ❤️ for the AI community</p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="app.js"></script>
+</body>
+
+</html>

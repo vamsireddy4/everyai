@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service | EveryAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script async crossorigin="anonymous"
+        data-clerk-publishable-key="pk_test_YXdha2UtaHllbmEtNzAuY2xlcmsuYWNjb3VudHMuZGV2JA"
+        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
+    <style>
+        .legal-content {
+            padding: 160px 20px 80px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .legal-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .legal-header h1 {
+            font-family: var(--font-head);
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-1) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .last-updated {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .legal-body {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 48px;
+            box-shadow: var(--shadow-lg);
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .legal-section {
+            margin-bottom: 40px;
+        }
+
+        .legal-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .legal-section h2 {
+            font-family: var(--font-head);
+            color: var(--text-primary);
+            font-size: 1.75rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .legal-section h2::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: var(--accent-1);
+            border-radius: 2px;
+        }
+
+        .legal-section p {
+            margin-bottom: 20px;
+        }
+
+        .legal-section ul {
+            margin-bottom: 20px;
+            padding-left: 24px;
+        }
+
+        .legal-section li {
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .legal-body {
+                padding: 32px 24px;
+            }
+
+            .legal-content {
+                padding-top: 120px;
+            }
+        }
+    </style>
+</head>
+
+<body id="body">
+    <!-- Premium Background Elements -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar scrolled" id="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">Every<span class="logo-accent">AI</span></span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="blogs.html" class="nav-link">Blogs</a></li>
+                <li><a href="prompts.html" class="nav-link">Prompts</a></li>
+                <li><a href="index.html#partnership" class="nav-link">PartnerShip</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="theme-toggle">
+                        <input type="checkbox" id="theme-toggle" />
+                        <div class="slider-round">
+                            <div class="knob"></div>
+                        </div>
+                    </label>
+                </div>
+                <a href="submit.html" class="btn-primary">Submit Tool</a>
+                <button id="sign-in-btn" class="btn-login" style="display: none;">Login</button>
+                <div id="user-button"></div>
+            </div>
+
+            <button class="hamburger" id="hamburger">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <main class="legal-content">
+        <div class="legal-header">
+            <h1>Terms of Service</h1>
+            <p class="last-updated">Last Updated: February 24, 2026</p>
+        </div>
+
+        <div class="legal-body">
+            <div class="legal-section">
+                <h2>Agreement to Terms</h2>
+                <p>By accessing or using EveryAI, you agree to be bound by these Terms of Service. If you disagree with
+                    any part of the terms, then you may not access the service.</p>
+            </div>
+
+            <div class="legal-section">
+                <h2>Use License</h2>
+                <p>Permission is granted to temporarily download one copy of the materials (information or software) on
+                    EveryAI's website for personal, non-commercial transitory viewing only.</p>
+                <p>This is the grant of a license, not a transfer of title, and under this license you may not:</p>
+                <ul>
+                    <li>Modify or copy the materials.</li>
+                    <li>Use the materials for any commercial purpose, or for any public display.</li>
+                    <li>Attempt to decompile or reverse engineer any software contained on EveryAI.</li>
+                    <li>Remove any copyright or other proprietary notations from the materials.</li>
+                </ul>
+            </div>
+
+            <div class="legal-section">
+                <h2>Disclaimer</h2>
+                <p>The materials on EveryAI's website are provided on an 'as is' basis. EveryAI makes no warranties,
+                    expressed or implied, and hereby disclaims and negates all other warranties including, without
+                    limitation, implied warranties or conditions of merchantability, fitness for a particular purpose,
+                    or non-infringement of intellectual property or other violation of rights.</p>
+            </div>
+
+            <div class="legal-section">
+                <h2>Limitations</h2>
+                <p>In no event shall EveryAI or its suppliers be liable for any damages (including, without limitation,
+                    damages for loss of data or profit, or due to business interruption) arising out of the use or
+                    inability to use the materials on EveryAI's website.</p>
+            </div>
+
+            <div class="legal-section">
+                <h2>Governing Law</h2>
+                <p>These terms and conditions are governed by and construed in accordance with the laws and you
+                    irrevocably submit to the exclusive jurisdiction of the courts in that State or location.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <a href="index.html" class="logo">
+                        <span class="logo-icon">⚡</span>
+                        <span class="logo-text">Every<span class="logo-accent">AI</span></span>
+                    </a>
+                    <p class="footer-tagline">The ultimate directory of AI-powered tools and apps.</p>
+                </div>
+
+                <div class="footer-links-group">
+                    <h4>Directory</h4>
+                    <a href="index.html#apps">All Tools</a>
+                    <a href="categories.html">All Categories</a>
+                    <a href="submit.html">Submit App</a>
+                    <a href="admin.html">Admin Dashboard</a>
+                </div>
+
+                <div class="footer-links-group">
+                    <h4>Company</h4>
+                    <a href="about.html">About</a>
+                    <a href="blogs.html">Blog</a>
+                    <a href="#">Contact</a>
+                </div>
+
+                <div class="footer-links-group">
+                    <h4>Legal</h4>
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-of-service.html">Terms of Service</a>
+                    <a href="cookie-policy.html">Cookie Policy</a>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>© 2026 EveryAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | EveryAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .profile-page {
+            padding: 120px 20px 60px;
+            min-height: 100vh;
+            background: var(--bg-base);
+        }
+
+        .profile-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* ── Profile Layout ── */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 32px;
+        }
+
+        @media (max-width: 768px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ── Profile Sidebar ── */
+        .profile-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .profile-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .avatar-wrapper {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            border: 3px solid var(--accent-1);
+            padding: 4px;
+            position: relative;
+        }
+
+        .profile-avatar-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--bg-card);
+        }
+
+        .btn-edit-avatar {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: var(--accent-1);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid var(--bg-surface);
+            transition: var(--transition);
+        }
+
+        .btn-edit-avatar:hover {
+            transform: scale(1.1);
+        }
+
+        .profile-card h2 {
+            font-family: var(--font-head);
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+
+        .profile-info-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        /* ── Settings Content ── */
+        .settings-content {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .settings-section {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .section-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-header h3 {
+            font-family: var(--font-head);
+            font-size: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .section-header svg {
+            color: var(--accent-1);
+        }
+
+        .section-body {
+            padding: 32px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 640px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 640px) {
+            .full-width {
+                grid-column: span 1;
+            }
+        }
+
+        .field-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .input-field {
+            padding: 12px 16px;
+            background: var(--bg-base);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-1);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(92, 184, 92, 0.1);
+        }
+
+        .section-footer {
+            padding: 20px 32px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            text-align: right;
+        }
+
+        /* ── Loading Overlay ── */
+        #profile-loader {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-base);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent-1);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body id="body">
+    <script>
+        // Apply saved theme instantly to prevent flash
+        (function () {
+            var t = localStorage.getItem('theme');
+            if (t === 'light') document.body.classList.add('light');
+        })();
+    </script>
+    <!-- ── Premium Background Elements ── -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <div class="bg-glow bg-glow-3"></div>
+
+    <!-- Loader -->
+    <div id="profile-loader">
+        <div class="spinner"></div>
+        <p>Loading your profile...</p>
+    </div>
+
+    <!-- ── Navbar ── -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="logo" id="logo-link">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">Every<span class="logo-accent">AI</span></span>
+            </a>
+
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="blogs.html" class="nav-link">Blogs</a></li>
+                <li><a href="prompts.html" class="nav-link">Prompts</a></li>
+                <li><a href="#" class="nav-link">PartnerShip</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="theme-toggle" aria-label="Toggle theme">
+                        <input type="checkbox" id="theme-toggle" />
+                        <div class="slider-round">
+                            <div class="knob"></div>
+                        </div>
+                    </label>
+                </div>
+                <a href="submit.html" class="btn-primary">Submit Tool</a>
+                <button id="sign-in-btn" class="btn-login" style="display: none;">Login</button>
+                <div id="user-button"></div>
+            </div>
+
+            <button class="hamburger" id="hamburger" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ── Mobile Menu ── -->
+    <div class="mobile-menu" id="mobile-menu">
+        <a href="index.html" class="mobile-link">Home</a>
+        <a href="about.html" class="mobile-link">About</a>
+        <a href="blogs.html" class="mobile-link">Blogs</a>
+        <a href="prompts.html" class="mobile-link">Prompts</a>
+        <a href="#" class="mobile-link">PartnerShip</a>
+        <div id="mobile-user-button"></div>
+        <button id="mobile-sign-in-btn" class="mobile-link" style="display: none;">Login</button>
+        <a href="submit.html" class="btn-primary mobile-cta">Submit Tool</a>
+    </div>
+
+    <main class="profile-page">
+        <div class="profile-container">
+            <div class="profile-grid">
+                <!-- Sidebar -->
+                <aside class="profile-sidebar">
+                    <div class="profile-card">
+                        <div class="avatar-wrapper">
+                            <img src="" alt="Avatar" class="profile-avatar-img" id="display-avatar">
+                            <label for="avatar-upload" class="btn-edit-avatar">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
+                                    </path>
+                                    <circle cx="12" cy="13" r="4"></circle>
+                                </svg>
+                            </label>
+                            <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+                        </div>
+
+                        <h2 id="sidebar-name">User Name</h2>
+                        <p class="profile-info-text" id="sidebar-email">user@example.com</p>
+
+                        <button class="btn-primary"
+                            style="width: 100%; background: #ef4444; border-color: #ef4444; justify-content: center; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);"
+                            id="logout-btn">
+                            Logout
+                        </button>
+                    </div>
+                </aside>
+
+                <!-- Content -->
+                <div class="settings-content">
+                    <!-- Profile Info -->
+                    <div class="settings-section">
+                        <div class="section-header">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <h3>Account Profile</h3>
+                        </div>
+                        <div class="section-body">
+                            <form id="profile-form" class="form-grid">
+                                <div class="form-group">
+                                    <label class="field-label">Preferred Name</label>
+                                    <input type="text" class="input-field" id="user-name"
+                                        placeholder="How should we call you?">
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-label">Email Address</label>
+                                    <input type="email" class="input-field" id="user-email" readonly
+                                        style="opacity: 0.7; cursor: not-allowed;">
+                                </div>
+                                <div class="form-group full-width">
+                                    <label class="field-label">Bio (Optional)</label>
+                                    <textarea class="input-field" id="user-bio" style="height: 100px; resize: none;"
+                                        placeholder="Tell us a bit about yourself..."></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-label">Website / Portfolio</label>
+                                    <input type="url" class="input-field" id="user-website"
+                                        placeholder="https://yourportfolio.com">
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-label">Twitter / X</label>
+                                    <input type="text" class="input-field" id="user-twitter" placeholder="@username">
+                                </div>
+                            </form>
+                        </div>
+                        <div class="section-footer">
+                            <button class="btn-primary" id="save-profile-btn">Save Profile Changes</button>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ── Footer ── -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <a href="index.html" class="logo">
+                        <span class="logo-icon">⚡</span>
+                        <span class="logo-text">Every<span class="logo-accent">AI</span></span>
+                    </a>
+                    <p class="footer-tagline">The ultimate directory of AI-powered tools and apps.</p>
+                    <div class="footer-socials">
+                        <a href="#" class="social-link" aria-label="Twitter">𝕏</a>
+                        <a href="#" class="social-link" aria-label="LinkedIn">in</a>
+                        <a href="#" class="social-link" aria-label="GitHub">⌥</a>
+                    </div>
+                </div>
+
+                <div class="footer-links-group">
+                    <h4>Directory</h4>
+                    <a href="index.html#apps">All Tools</a>
+                    <a href="categories.html">All Categories</a>
+                    <a href="submit.html">Submit App</a>
+                    <a href="admin.html">Admin Dashboard</a>
+                </div>
+
+                <div class="footer-links-group">
+                    <h4>Company</h4>
+                    <a href="about.html">About</a>
+                    <a href="#">Blog</a>
+                    <a href="#">Press</a>
+                    <a href="#">Contact</a>
+                </div>
+
+                <div class="footer-links-group">
+                    <h4>Legal</h4>
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-of-service.html">Terms of Service</a>
+                    <a href="cookie-policy.html">Cookie Policy</a>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>© 2026 EveryAI. All rights reserved.</p>
+                <p>Built with ❤️ for the AI community</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast"
+        style="position:fixed;bottom:-60px;left:50%;transform:translateX(-50%);background:var(--accent-1);color:#fff;padding:14px 28px;border-radius:var(--radius-full);font-weight:600;font-size:0.9rem;box-shadow:0 8px 30px rgba(92,184,92,0.4);transition:bottom 0.4s cubic-bezier(0.4,0,0.2,1);z-index:9999;">
+    </div>
+
+    <!-- Clerk SDK -->
+    <script async crossorigin="anonymous"
+        data-clerk-publishable-key="pk_test_YXdha2UtaHllbmEtNzAuY2xlcmsuYWNjb3VudHMuZGV2JA"
+        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
+
+    <script type="module" src="tracker.js"></script>
+    <script type="module" src="profile.js"></script>
+</body>
+
+</html>

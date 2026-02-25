@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Categories | EveryAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script async crossorigin="anonymous"
+        data-clerk-publishable-key="pk_test_YXdha2UtaHllbmEtNzAuY2xlcmsuYWNjb3VudHMuZGV2JA"
+        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
+    <style>
+        .categories-page {
+            min-height: 100vh;
+            padding: 120px 20px 80px 20px;
+            background: var(--bg-base);
+        }
+
+        .categories-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .categories-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .categories-header h1 {
+            font-family: var(--font-head);
+            font-size: 3.5rem;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+            letter-spacing: -1px;
+        }
+
+        .categories-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .category-group {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: var(--bg-surface);
+            padding: 30px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .category-group:hover {
+            border-color: rgba(92, 184, 92, 0.3);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .group-title {
+            font-family: var(--font-head);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            position: relative;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent-1);
+            display: inline-block;
+            width: fit-content;
+        }
+
+        .tags-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .category-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-full);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .category-pill:hover {
+            background: var(--accent-1);
+            border-color: var(--accent-1);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        body.light .category-pill {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+
+        body.light .category-pill:hover {
+            background: var(--accent-1);
+            border-color: var(--accent-1);
+        }
+
+        .back-nav {
+            max-width: 1200px;
+            margin: 0 auto 40px auto;
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: var(--transition);
+            padding: 8px 16px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-full);
+        }
+
+        .back-link:hover {
+            color: var(--accent-1);
+            border-color: var(--accent-1);
+        }
+
+        @media (max-width: 768px) {
+            .categories-header h1 {
+                font-size: 2.5rem;
+            }
+
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .categories-page {
+                padding-top: 100px;
+            }
+        }
+    </style>
+</head>
+
+<body id="body">
+    <!-- ── Premium Background Elements ── -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <div class="bg-glow bg-glow-3"></div>
+
+    <!-- ── Navbar ── -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="logo" id="logo-link">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">Every<span class="logo-accent">AI</span></span>
+            </a>
+
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="blogs.html" class="nav-link">Blogs</a></li>
+                <li><a href="prompts.html" class="nav-link">Prompts</a></li>
+                <li><a href="#" class="nav-link">PartnerShip</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="theme-toggle" aria-label="Toggle theme">
+                        <input type="checkbox" id="theme-toggle" />
+                        <div class="slider-round">
+                            <div class="knob"></div>
+                        </div>
+                    </label>
+                </div>
+                <a href="submit.html" class="btn-primary">Submit Tool</a>
+                <button id="sign-in-btn" class="btn-login" style="display: none;">Login</button>
+                <div id="user-button"></div>
+            </div>
+
+            <button class="hamburger" id="hamburger" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ── Mobile Menu ── -->
+    <div class="mobile-menu" id="mobile-menu">
+        <a href="index.html" class="mobile-link">Home</a>
+        <a href="about.html" class="mobile-link">About</a>
+        <a href="blogs.html" class="mobile-link">Blogs</a>
+        <a href="prompts.html" class="mobile-link">Prompts</a>
+        <a href="#" class="mobile-link">PartnerShip</a>
+        <div id="mobile-user-button"></div>
+        <button id="mobile-sign-in-btn" class="mobile-link" style="display: none;">Login</button>
+        <a href="submit.html" class="btn-primary mobile-cta">Submit Tool</a>
+    </div>
+
+    <main class="categories-page">
+
+
+        <section class="categories-container">
+            <div class="categories-header">
+                <h1>All Categories</h1>
+                <p>Browse all categories at one glance</p>
+            </div>
+
+            <div class="categories-grid">
+                <!-- Text -->
+                <div class="category-group">
+                    <h2 class="group-title">Text</h2>
+                    <div class="tags-list">
+                        <a href="index.html?filter=copywriting" class="category-pill">Copywriting</a>
+                        <a href="index.html?filter=email-assistant" class="category-pill">Email Assistant</a>
+                        <a href="index.html?filter=general-writing" class="category-pill">General Writing</a>
+                        <a href="index.html?filter=summarizer" class="category-pill">Summarizer</a>
+                        <a href="index.html?filter=prompts" class="category-pill">Prompts</a>
+                        <a href="index.html?filter=seo" class="category-pill">SEO</a>
+                        <a href="index.html?filter=social-media-assistant" class="category-pill">Social Media
+                            Assistant</a>
+                    </div>
+                </div>
+
+                <!-- Image -->
+                <div class="category-group">
+                    <h2 class="group-title">Image</h2>
+                    <div class="tags-list">
+                        <a href="index.html?filter=art" class="category-pill">Art</a>
+                        <a href="index.html?filter=avatars" class="category-pill">Avatars</a>
+                        <a href="index.html?filter=image-editing" class="category-pill">Image Editing</a>
+                        <a href="index.html?filter=logo-generator" class="category-pill">Logo Generator</a>
+                        <a href="index.html?filter=image-generator" class="category-pill">Image Generator</a>
+                    </div>
+                </div>
+
+                <!-- Code -->
+                <div class="category-group">
+                    <h2 class="group-title">Code</h2>
+                    <div class="tags-list">
+                        <a href="index.html?filter=code-assistant" class="category-pill">Code Assistant</a>
+                        <a href="index.html?filter=developer-tools" class="category-pill">Developer Tools</a>
+                        <a href="index.html?filter=low-code-no-code" class="category-pill">Low-code/No-code</a>
+                        <a href="index.html?filter=spreadsheets" class="category-pill">Spreadsheets</a>
+                        <a href="index.html?filter=sql" class="category-pill">SQL</a>
+                    </div>
+                </div>
+
+                <!-- Audio -->
+                <div class="category-group">
+                    <h2 class="group-title">Audio</h2>
+                    <div class="tags-list">
+                        <a href="index.html?filter=music" class="category-pill">Music</a>
+                        <a href="index.html?filter=text-to-speech" class="category-pill">Text to Speech</a>
+                        <a href="index.html?filter=transcriber" class="category-pill">Transcriber</a>
+                    </div>
+                </div>
+
+                <!-- Video -->
+                <div class="category-group">
+                    <h2 class="group-title">Video</h2>
+                    <div class="tags-list">
+                        <a href="index.html?filter=video-editing" class="category-pill">Video Editing</a>
+                        <a href="index.html?filter=video-generator" class="category-pill">Video Generator</a>
+                    </div>
+                </div>
+
+                <!-- 3D -->
+                <div class="category-group">
+                    <h2 class="group-title">3D</h2>
+                    <div class="tags-list">
+                        <a href="index.html?filter=3d" class="category-pill">3D</a>
+                    </div>
+                </div>
+
+                <!-- Business -->
+                <div class="category-group">
+                    <h2 class="group-title">Business</h2>
+                    <div class="tags-list">
+                        <a href="index.html?filter=customer-support" class="category-pill">Customer Support</a>
+                        <a href="index.html?filter=e-commerce" class="category-pill">E-commerce</a>
+                        <a href="index.html?filter=education-assistant" class="category-pill">Education Assistant</a>
+                        <a href="index.html?filter=fashion" class="category-pill">Fashion</a>
+                        <a href="index.html?filter=finance" class="category-pill">Finance</a>
+                        <a href="index.html?filter=presentations" class="category-pill">Presentations</a>
+                        <a href="index.html?filter=productivity" class="category-pill">Productivity</a>
+                        <a href="index.html?filter=real-estate" class="category-pill">Real Estate</a>
+                        <a href="index.html?filter=sales" class="category-pill">Sales</a>
+                        <a href="index.html?filter=startup-tools" class="category-pill">Startup Tools</a>
+                    </div>
+                </div>
+
+                <!-- Other -->
+                <div class="category-group">
+                    <h2 class="group-title">Other</h2>
+                    <div class="tags-list">
+                        <a href="index.html?filter=fitness" class="category-pill">Fitness</a>
+                        <a href="index.html?filter=fun-tools" class="category-pill">Fun Tools</a>
+                        <a href="index.html?filter=gaming" class="category-pill">Gaming</a>
+                        <a href="index.html?filter=healthcare" class="category-pill">Healthcare</a>
+                        <a href="index.html?filter=life-assistant" class="category-pill">Life Assistant</a>
+                        <a href="index.html?filter=religion" class="category-pill">Religion</a>
+                        <a href="index.html?filter=research" class="category-pill">Research</a>
+                        <a href="index.html?filter=resources" class="category-pill">Resources</a>
+                        <a href="index.html?filter=search-engine" class="category-pill">Search Engine</a>
+                        <a href="index.html?filter=travel" class="category-pill">Travel</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ── Footer ── -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <a href="index.html" class="logo">
+                        <span class="logo-icon">⚡</span>
+                        <span class="logo-text">Every<span class="logo-accent">AI</span></span>
+                    </a>
+                    <p class="footer-tagline">The ultimate directory of AI-powered tools and apps.</p>
+                    <div class="footer-socials">
+                        <a href="#" class="social-link" aria-label="Twitter">𝕏</a>
+                        <a href="#" class="social-link" aria-label="LinkedIn">in</a>
+                        <a href="#" class="social-link" aria-label="GitHub">⌥</a>
+                    </div>
+                </div>
+
+                <div class="footer-links-group">
+                    <h4>Directory</h4>
+                    <a href="index.html#apps">All Tools</a>
+                    <a href="categories.html">All Categories</a>
+                    <a href="submit.html">Submit App</a>
+                    <a href="admin.html">Admin Dashboard</a>
+                </div>
+
+                <div class="footer-links-group">
+                    <h4>Company</h4>
+                    <a href="about.html">About</a>
+                    <a href="#">Blog</a>
+                    <a href="#">Press</a>
+                    <a href="#">Contact</a>
+                </div>
+
+                <div class="footer-links-group">
+                    <h4>Legal</h4>
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-of-service.html">Terms of Service</a>
+                    <a href="cookie-policy.html">Cookie Policy</a>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>© 2026 EveryAI. All rights reserved.</p>
+                <p>Built with ❤️ for the AI community</p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="app.js"></script>
+</body>
+
+</html>
