@@ -1863,3 +1863,12 @@ body.light .cat-card:hover {
     padding: 24px;
   }
 }
+/* ── Hide Clerk branding (Secured by Clerk / Development mode) ── */
+[class*="cl-footer"],
+[class*="cl-internal-b3fm57"],
+[class*="cl-devBrowser"],
+.cl-footer,
+.cl-footerAction,
+.cl-footerPages {
+  display: none !important;
+}

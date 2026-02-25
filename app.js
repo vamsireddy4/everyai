@@ -452,7 +452,28 @@ async function initClerk() {
   }
 
   try {
-    await window.Clerk.load();
+    await window.Clerk.load({
+      appearance: {
+        elements: {
+          // Hide "Secured by Clerk" footer on all Clerk UI surfaces
+          footer: { display: 'none !important' },
+          footerAction: { display: 'none !important' },
+          footerPages: { display: 'none !important' },
+          // Hide "Development mode" badge
+          devBrowser: { display: 'none !important' },
+          'cl-devBrowser': { display: 'none !important' },
+          userButtonPopoverFooter: { display: 'none !important' },
+        }
+      }
+    });
+
+    // Scrub any Clerk branding injected after page load
+    const clerkBrandingObserver = new MutationObserver(() => {
+      document.querySelectorAll(
+        '[class*="cl-footer"], [class*="cl-internal"], [data-clerk-component="footer"]'
+      ).forEach(el => el.style.setProperty('display', 'none', 'important'));
+    });
+    clerkBrandingObserver.observe(document.body, { childList: true, subtree: true });
 
     if (window.Clerk.user) {
       const user = window.Clerk.user;

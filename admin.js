@@ -40,7 +40,22 @@ async function initAdminAuth() {
     }
 
     try {
-        await window.Clerk.load();
+        const clerkAppearance = {
+            elements: {
+                footer: { display: 'none' },
+                footerAction: { display: 'none' },
+                footerPages: { display: 'none' },
+                devBrowser: { display: 'none' },
+                userButtonPopoverFooter: { display: 'none' },
+            }
+        };
+        await window.Clerk.load({ appearance: clerkAppearance });
+
+        // Scrub any Clerk branding injected dynamically
+        new MutationObserver(() => {
+            document.querySelectorAll('[class*="cl-footer"],[class*="cl-internal"],[data-clerk-component="footer"]')
+                .forEach(el => el.style.setProperty('display', 'none', 'important'));
+        }).observe(document.body, { childList: true, subtree: true });
 
         if (window.Clerk.user) {
             const email = window.Clerk.user.primaryEmailAddress.emailAddress.toLowerCase();
@@ -78,7 +93,11 @@ async function initAdminAuth() {
                     appearance: {
                         elements: {
                             headerTitle: "EveryAI Admin Login",
-                            headerSubtitle: "Secure access for administrators only."
+                            headerSubtitle: "Secure access for administrators only.",
+                            footer: { display: 'none' },
+                            footerAction: { display: 'none' },
+                            footerPages: { display: 'none' },
+                            devBrowser: { display: 'none' },
                         }
                     }
                 });
