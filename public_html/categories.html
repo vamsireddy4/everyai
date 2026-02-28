@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Categories | EveryAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script async crossorigin="anonymous"
+        data-clerk-publishable-key="pk_live_Y2xlcmsuZXZlcnktYWkuY29tJA"
+        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
+    <style>
+        .categories-page {
+            min-height: 100vh;
+            padding: 120px 20px 80px 20px;
+            background: var(--bg-base);
+        }
+
+        .categories-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .categories-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .categories-header h1 {
+            font-family: var(--font-head);
+            font-size: 3.5rem;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+            letter-spacing: -1px;
+        }
+
+        .categories-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .category-group {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: var(--bg-surface);
+            padding: 30px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .category-group:hover {
+            border-color: rgba(92, 184, 92, 0.3);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .group-title {
+            font-family: var(--font-head);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            position: relative;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent-1);
+            display: inline-block;
+            width: fit-content;
+        }
+
+        .tags-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .category-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-full);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .category-pill:hover {
+            background: var(--accent-1);
+            border-color: var(--accent-1);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        body.light .category-pill {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+
+        body.light .category-pill:hover {
+            background: var(--accent-1);
+            border-color: var(--accent-1);
+        }
+
+        .back-nav {
+            max-width: 1200px;
+            margin: 0 auto 40px auto;
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: var(--transition);
+            padding: 8px 16px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-full);
+        }
+
+        .back-link:hover {
+            color: var(--accent-1);
+            border-color: var(--accent-1);
+        }
+
+        /* ── Comparison Table ── */
+        .comparison-section {
+            margin-top: 80px;
+        }
+
+        .comparison-section h2 {
+            font-family: var(--font-head);
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-align: center;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .comparison-section .section-sub {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 36px;
+            opacity: 0.8;
+        }
+
+        .comparison-table-wrap {
+            overflow-x: auto;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .comparison-table thead tr {
+            background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2, #3b82f6) 100%);
+        }
+
+        .comparison-table thead th {
+            padding: 18px 24px;
+            text-align: left;
+            color: #fff;
+            font-family: var(--font-head);
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .comparison-table thead th:first-child {
+            border-radius: var(--radius-lg) 0 0 0;
+        }
+
+        .comparison-table thead th:last-child {
+            border-radius: 0 var(--radius-lg) 0 0;
+        }
+
+        .comparison-table tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s;
+        }
+
+        .comparison-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .comparison-table tbody tr:hover {
+            background: rgba(92, 184, 92, 0.06);
+        }
+
+        .comparison-table tbody td {
+            padding: 16px 24px;
+            vertical-align: top;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .comparison-table tbody td:first-child {
+            font-weight: 700;
+            color: var(--accent-1);
+            white-space: nowrap;
+            background: rgba(92, 184, 92, 0.04);
+        }
+
+        .comparison-table tbody tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .comparison-table tbody tr:nth-child(even):hover {
+            background: rgba(92, 184, 92, 0.06);
+        }
+
+        body.light .comparison-table tbody tr:nth-child(even) {
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        body.light .comparison-table tbody tr:hover {
+            background: rgba(92, 184, 92, 0.07);
+        }
+
+        body.light .comparison-table tbody td:first-child {
+            background: rgba(92, 184, 92, 0.05);
+        }
+
+        .col-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .col-badge .badge-icon {
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .categories-header h1 {
+                font-size: 2.5rem;
+            }
+
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .categories-page {
+                padding-top: 100px;
+            }
+
+            .comparison-table tbody td:first-child {
+                white-space: normal;
+            }
+        }
+    </style>
+    <link rel="icon" type="image/png"
+        href="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png">
+</head>
+
+<body id="body">
+    <!-- ── Premium Background Elements ── -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <div class="bg-glow bg-glow-3"></div>
+
+    <!-- ── Navbar ── -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="logo" id="logo-link">
+                <span class="logo-icon"><img
+                        src="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png"
+                        alt="EveryAI Logo" class="logo-img"></span>
+                <span class="logo-text">Every<span class="logo-accent">AI</span></span>
+            </a>
+
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="blogs.html" class="nav-link">Blogs</a></li>
+                <li><a href="prompts.html" class="nav-link">Prompts</a></li>
+                <li><a href="contact.html" class="nav-link">Contact Us</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="theme-toggle" aria-label="Toggle theme">
+                        <input type="checkbox" id="theme-toggle" />
+                        <div class="slider-round">
+                            <div class="knob"></div>
+                        </div>
+                    </label>
+                </div>
+                <a href="submit.html" class="btn-primary">Submit Tool</a>
+                <button id="sign-in-btn" class="btn-login" style="display: none;">Login</button>
+                <div id="user-button"></div>
+            </div>
+
+            <button class="hamburger" id="hamburger" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ── Mobile Menu ── -->
+    <div class="mobile-menu" id="mobile-menu">
+        <a href="index.html" class="mobile-link">Home</a>
+        <a href="about.html" class="mobile-link">About</a>
+        <a href="blogs.html" class="mobile-link">Blogs</a>
+        <a href="prompts.html" class="mobile-link">Prompts</a>
+        <a href="contact.html" class="mobile-link">Contact Us</a>
+        <div id="mobile-user-button"></div>
+        <button id="mobile-sign-in-btn" class="mobile-link" style="display: none;">Login</button>
+        <a href="submit.html" class="btn-primary mobile-cta">Submit Tool</a>
+    </div>
+
+    <main class="categories-page">
+
+
+        <section class="categories-container">
+            <div class="categories-header">
+                <h1>All Categories</h1>
+                <p>Browse all categories at one glance</p>
+            </div>
+
+            <div class="categories-grid">
+                <!-- Text -->
+                <div class="category-group">
+                    <h2 class="group-title">Text</h2>
+                    <div class="tags-list">
+                        <a href="index.html?filter=copywriting" class="category-pill">Copywriting</a>
+                        <a href="index.html?filter=email-assistant" class="category-pill">Email Assistant</a>
+                        <a href="index.html?filter=general-writing" class="category-pill">General Writing</a>
+                        <a href="index.html?filter=summarizer" class="category-pill">Summarizer</a>
+                        <a href="index.html?filter=prompts" class="category-pill">Prompts</a>
+                        <a href="index.html?filter=seo" class="category-pill">SEO</a>
+                        <a href="index.html?filter=social-media-assistant" class="category-pill">Social Media
+                            Assistant</a>
+                    </div>
+                </div>
+
+                <!-- Image -->
+                <div class="category-group">
+                    <h2 class="group-title">Image</h2>
+                    <div class="tags-list">
+                        <a href="index.html?filter=art" class="category-pill">Art</a>
+                        <a href="index.html?filter=avatars" class="category-pill">Avatars</a>
+                        <a href="index.html?filter=image-editing" class="category-pill">Image Editing</a>
+                        <a href="index.html?filter=logo-generator" class="category-pill">Logo Generator</a>
+                        <a href="index.html?filter=image-generator" class="category-pill">Image Generator</a>
+                    </div>
+                </div>
+
+                <!-- Code -->
+                <div class="category-group">
+                    <h2 class="group-title">Code</h2>
+                    <div class="tags-list">
+                        <a href="index.html?filter=code-assistant" class="category-pill">Code Assistant</a>
+                        <a href="index.html?filter=developer-tools" class="category-pill">Developer Tools</a>
+                        <a href="index.html?filter=low-code-no-code" class="category-pill">Low-code/No-code</a>
+                        <a href="index.html?filter=spreadsheets" class="category-pill">Spreadsheets</a>
+                        <a href="index.html?filter=sql" class="category-pill">SQL</a>
+                    </div>
+                </div>
+
+                <!-- Audio -->
+                <div class="category-group">
+                    <h2 class="group-title">Audio</h2>
+                    <div class="tags-list">
+                        <a href="index.html?filter=music" class="category-pill">Music</a>
+                        <a href="index.html?filter=text-to-speech" class="category-pill">Text to Speech</a>
+                        <a href="index.html?filter=transcriber" class="category-pill">Transcriber</a>
+                    </div>
+                </div>
+
+                <!-- Video -->
+                <div class="category-group">
+                    <h2 class="group-title">Video</h2>
+                    <div class="tags-list">
+                        <a href="index.html?filter=video-editing" class="category-pill">Video Editing</a>
+                        <a href="index.html?filter=video-generator" class="category-pill">Video Generator</a>
+                    </div>
+                </div>
+
+                <!-- 3D -->
+                <div class="category-group">
+                    <h2 class="group-title">3D</h2>
+                    <div class="tags-list">
+                        <a href="index.html?filter=3d" class="category-pill">3D</a>
+                    </div>
+                </div>
+
+                <!-- Business -->
+                <div class="category-group">
+                    <h2 class="group-title">Business</h2>
+                    <div class="tags-list">
+                        <a href="index.html?filter=customer-support" class="category-pill">Customer Support</a>
+                        <a href="index.html?filter=e-commerce" class="category-pill">E-commerce</a>
+                        <a href="index.html?filter=education-assistant" class="category-pill">Education Assistant</a>
+                        <a href="index.html?filter=fashion" class="category-pill">Fashion</a>
+                        <a href="index.html?filter=finance" class="category-pill">Finance</a>
+                        <a href="index.html?filter=presentations" class="category-pill">Presentations</a>
+                        <a href="index.html?filter=productivity" class="category-pill">Productivity</a>
+                        <a href="index.html?filter=real-estate" class="category-pill">Real Estate</a>
+                        <a href="index.html?filter=sales" class="category-pill">Sales</a>
+                        <a href="index.html?filter=startup-tools" class="category-pill">Startup Tools</a>
+                    </div>
+                </div>
+
+                <!-- Other -->
+                <div class="category-group">
+                    <h2 class="group-title">Other</h2>
+                    <div class="tags-list">
+                        <a href="index.html?filter=fitness" class="category-pill">Fitness</a>
+                        <a href="index.html?filter=fun-tools" class="category-pill">Fun Tools</a>
+                        <a href="index.html?filter=gaming" class="category-pill">Gaming</a>
+                        <a href="index.html?filter=healthcare" class="category-pill">Healthcare</a>
+                        <a href="index.html?filter=life-assistant" class="category-pill">Life Assistant</a>
+                        <a href="index.html?filter=religion" class="category-pill">Religion</a>
+                        <a href="index.html?filter=research" class="category-pill">Research</a>
+                        <a href="index.html?filter=resources" class="category-pill">Resources</a>
+                        <a href="index.html?filter=search-engine" class="category-pill">Search Engine</a>
+                        <a href="index.html?filter=travel" class="category-pill">Travel</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── AI Apps vs AI Websites Comparison Table ── -->
+            <div class="comparison-section">
+                <h2>AI Apps vs AI Websites</h2>
+                <p class="section-sub">A quick look at how AI-powered apps and websites compare across key dimensions
+                </p>
+
+                <div class="comparison-table-wrap">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Aspect</th>
+                                <th><span class="col-badge"><span class="badge-icon">📱</span> AI Apps</span></th>
+                                <th><span class="col-badge"><span class="badge-icon">🌐</span> AI Websites</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>User Interaction</td>
+                                <td>Native and optimized for mobile interactions</td>
+                                <td>Web-based, accessible across different devices and platforms</td>
+                            </tr>
+                            <tr>
+                                <td>Performance</td>
+                                <td>Utilizes hardware features for enhanced performance</td>
+                                <td>Relies on an internet connection and device processing power</td>
+                            </tr>
+                            <tr>
+                                <td>Offline Functionality</td>
+                                <td>Can offer offline functionality, allowing users without internet</td>
+                                <td>Requires internet connection for real-time AI functionalities</td>
+                            </tr>
+                            <tr>
+                                <td>Installation &amp; Updates</td>
+                                <td>Requires installation and manual updates</td>
+                                <td>Accessible without installation, easy updates and maintenance</td>
+                            </tr>
+                            <tr>
+                                <td>Device Compatibility</td>
+                                <td>Optimized for specific mobile platforms</td>
+                                <td>Cross-platform compatibility for various devices and operating systems</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ── Footer ── -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <a href="index.html" class="logo">
+                        <span class="logo-icon"><img
+                                src="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png"
+                                alt="EveryAI Logo" class="logo-img"></span>
+                        <span class="logo-text">Every<span class="logo-accent">AI</span></span>
+                    </a>
+                    <p class="footer-tagline">The ultimate directory of AI-powered tools and apps.</p>
+                    <div class="footer-socials">
+                        <a href="https://www.linkedin.com/company/every-ai-com/" target="_blank"
+                            class="social-link linkedin" title="Follow us on LinkedIn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="currentColor">
+                                <path
+                                    d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="footer-links-group">
+                    <h4>Directory</h4>
+                    <a href="index.html#apps">All Tools</a>
+                    <a href="categories.html">All Categories</a>
+                    <a href="submit.html">Submit App</a>
+                    <a href="admin.html" id="admin-dashboard-link" style="display: none;">Admin Dashboard</a>
+                </div>
+
+                <div class="footer-links-group">
+                    <h4>Company</h4>
+                    <a href="index.html">Home</a>
+                    <a href="about.html">About</a>
+                    <a href="blogs.html">Blogs</a>
+                    <a href="prompts.html">Prompts</a>
+                    <a href="contact.html">Contact Us</a>
+                </div>
+
+                <div class="footer-links-group">
+                    <h4>Legal</h4>
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-of-service.html">Terms of Service</a>
+                    <a href="cookie-policy.html">Cookie Policy</a>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>© 2026 EveryAI. All rights reserved.</p>
+                <p>Built with ❤️ for the AI community</p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="app.js"></script>
+</body>
+
+</html>

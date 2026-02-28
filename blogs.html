@@ -11,8 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script async crossorigin="anonymous"
-        data-clerk-publishable-key="pk_live_Y2xlcmsuZXZlcnktYWkuY29tJA"
+    <script async crossorigin="anonymous" data-clerk-publishable-key="pk_live_Y2xlcmsuZXZlcnktYWkuY29tJA"
         src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
     <style>
         .blogs-page {
@@ -399,7 +398,7 @@
             <!-- Latest Articles -->
             <div class="latest-section">
                 <div class="blog-header-wrapper" style="margin-bottom: 50px; text-align: center;">
-                    <div
+                    <div class="blog-header-grid"
                         style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 30px; margin-bottom: 20px;">
                         <!-- Left Spacer for centering -->
                         <div class="header-spacer" style="display: block; visibility: hidden; flex: 1;">Spacer</div>
@@ -407,7 +406,7 @@
                         <!-- Centered Title & Subtitle -->
                         <div style="text-align: center;">
                             <h2
-                                style="font-family: var(--font-head); font-size: 5rem; font-weight: 800; letter-spacing: -3px; margin: 0; line-height: 1.1;">
+                                style="font-family: var(--font-head); font-size: clamp(2.5rem, 10vw, 5rem); font-weight: 800; letter-spacing: -3px; margin: 0; line-height: 1.1; white-space: nowrap;">
                                 <span style="color: var(--text-primary);">Latest</span>
                                 <span style="color: #5cb85c;">Articles</span>
                             </h2>
@@ -436,6 +435,24 @@
                         </div>
                     </div>
                 </div>
+
+                <style>
+                    @media (max-width: 900px) {
+                        .blog-header-grid {
+                            grid-template-columns: 1fr !important;
+                            gap: 20px !important;
+                        }
+
+                        .header-spacer {
+                            display: none !important;
+                        }
+
+                        .blog-search-container {
+                            justify-self: center !important;
+                            max-width: 400px !important;
+                        }
+                    }
+                </style>
                 <div class="latest-grid" id="dynamic-latest">
                     <!-- Filled by script -->
                 </div>
@@ -522,40 +539,6 @@
 
     <script type="module">
         import { convex } from './convex-client.js';
-        // Theme Logic
-        const themeToggle = document.getElementById('theme-toggle');
-        const body = document.getElementById('body');
-
-        if (localStorage.getItem('theme') === 'light') {
-            body.classList.add('light');
-            themeToggle.checked = true;
-        }
-
-        themeToggle.addEventListener('change', () => {
-            const isLight = themeToggle.checked;
-            body.classList.toggle('light', isLight);
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
-        });
-
-        // Navbar scroll effect
-        window.addEventListener('scroll', () => {
-            const navbar = document.getElementById('navbar');
-            if (window.scrollY > 50) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
-        });
-
-        // Hamburger Menu Logic
-        const hamburger = document.getElementById('hamburger');
-        const mobileMenu = document.getElementById('mobile-menu');
-
-        hamburger?.addEventListener('click', () => {
-            hamburger.classList.toggle('open');
-            mobileMenu.classList.toggle('open');
-        });
-
         // Dynamic Loading of Blogs from Admin Dashboard
         let allBlogsCache = [];
         let filteredBlogs = [];

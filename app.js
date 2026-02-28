@@ -840,5 +840,16 @@ function initPageTransitions() {
   });
 }
 
+// ── Clean URLs (Remove .html from address bar) ──
+function cleanURL() {
+  const path = window.location.pathname;
+  if (path.endsWith('.html')) {
+    let newPath = path.slice(0, -5);
+    if (newPath === '/index') newPath = '/';
+    window.history.replaceState(null, '', newPath + window.location.search + window.location.hash);
+  }
+}
+
 init();
 initPageTransitions();
+cleanURL();

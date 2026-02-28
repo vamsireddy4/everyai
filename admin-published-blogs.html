@@ -172,10 +172,10 @@
             color: var(--text-primary);
         }
     </style>
-    <script async crossorigin="anonymous"
-        data-clerk-publishable-key="pk_live_Y2xlcmsuZXZlcnktYWkuY29tJA"
+    <script async crossorigin="anonymous" data-clerk-publishable-key="pk_live_Y2xlcmsuZXZlcnktYWkuY29tJA"
         src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
-    <link rel="icon" type="image/png" href="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png">
+    <link rel="icon" type="image/png"
+        href="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png">
 </head>
 
 <body id="body">
@@ -188,7 +188,9 @@
     <nav class="navbar" id="navbar">
         <div class="nav-inner">
             <a href="index.html" class="logo">
-                <span class="logo-icon"><img src="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png" alt="EveryAI Logo" class="logo-img"></span>
+                <span class="logo-icon"><img
+                        src="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png"
+                        alt="EveryAI Logo" class="logo-img"></span>
                 <span class="logo-text">Every<span class="logo-accent">AI</span> <span
                         style="font-size:0.7rem; opacity:0.5; margin-left:4px">ADMIN</span></span>
             </a>
@@ -243,6 +245,17 @@
                         </tbody>
                     </table>
                 </div>
+                <div id="pagination-controls"
+                    style="display: none; gap: 10px; justify-content: center; padding: 20px; border-top: 1px solid var(--border);">
+                    <button id="prev-page-btn"
+                        style="background:var(--bg-surface); border:1px solid var(--border); padding:8px 16px; border-radius:var(--radius-md); cursor:pointer; color:var(--text-primary); font-weight:600;">&larr;
+                        Previous</button>
+                    <span id="page-indicator"
+                        style="align-self:center; font-weight:600; color:var(--text-secondary);">&nbsp;</span>
+                    <button id="next-page-btn"
+                        style="background:var(--bg-surface); border:1px solid var(--border); padding:8px 16px; border-radius:var(--radius-md); cursor:pointer; color:var(--text-primary); font-weight:600;">Next
+                        &rarr;</button>
+                </div>
             </div>
         </div>
     </main>
@@ -252,27 +265,55 @@
         import { convex } from "./convex-client.js";
 
         let allBlogsCache = [];
+        let filteredBlogsCache = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
 
         async function loadPublishedBlogs() {
             const list = document.getElementById('published-blogs-list');
             try {
                 const blogs = await convex.query("blogs:getBlogs");
-                allBlogsCache = blogs;
-                renderBlogTable(allBlogsCache);
+                // Sort by newest by default
+                allBlogsCache = blogs.sort((a, b) => b.timestamp - a.timestamp);
+                filteredBlogsCache = [...allBlogsCache];
+                currentPage = 1;
+                renderBlogTable();
             } catch (err) {
                 console.error(err);
                 list.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:40px; color:red;">Error loading blogs.</td></tr>';
             }
         }
 
-        function renderBlogTable(blogs) {
+        function renderBlogTable() {
             const list = document.getElementById('published-blogs-list');
-            if (!blogs || blogs.length === 0) {
+            const paginationControls = document.getElementById('pagination-controls');
+
+            if (!filteredBlogsCache || filteredBlogsCache.length === 0) {
                 list.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:40px;">No matching blogs found.</td></tr>';
+                paginationControls.style.display = 'none';
                 return;
             }
 
-            list.innerHTML = blogs.map(blog => `
+            paginationControls.style.display = 'flex';
+
+            const totalPages = Math.ceil(filteredBlogsCache.length / itemsPerPage);
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const pageBlogs = filteredBlogsCache.slice(startIdx, startIdx + itemsPerPage);
+
+            document.getElementById('page-indicator').textContent = `Page ${currentPage} of ${totalPages}`;
+
+            const prevBtn = document.getElementById('prev-page-btn');
+            const nextBtn = document.getElementById('next-page-btn');
+
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+            prevBtn.style.opacity = currentPage === 1 ? '0.5' : '1';
+            nextBtn.style.opacity = currentPage === totalPages ? '0.5' : '1';
+
+            list.innerHTML = pageBlogs.map(blog => `
                 <tr>
                     <td style="font-weight:600">${blog.title}</td>
                     <td>${blog.category}</td>
@@ -290,6 +331,24 @@
             `).join('');
         }
 
+        // Pagination buttons
+        document.getElementById('prev-page-btn').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderBlogTable();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+
+        document.getElementById('next-page-btn').addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredBlogsCache.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderBlogTable();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+
         // Search logic
         const searchInput = document.getElementById('admin-blog-search');
         const searchClear = document.getElementById('admin-search-clear');
@@ -298,17 +357,20 @@
             const q = searchInput.value.toLowerCase().trim();
             searchClear.style.display = q ? 'block' : 'none';
 
-            const filtered = allBlogsCache.filter(b =>
+            filteredBlogsCache = allBlogsCache.filter(b =>
                 b.title.toLowerCase().includes(q) ||
                 b.category.toLowerCase().includes(q)
             );
-            renderBlogTable(filtered);
+            currentPage = 1;
+            renderBlogTable();
         });
 
         searchClear.addEventListener('click', () => {
             searchInput.value = '';
             searchClear.style.display = 'none';
-            renderBlogTable(allBlogsCache);
+            filteredBlogsCache = [...allBlogsCache];
+            currentPage = 1;
+            renderBlogTable();
             searchInput.focus();
         });
 

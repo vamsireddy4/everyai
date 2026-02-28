@@ -568,6 +568,15 @@ body.light .navbar.scrolled {
   content: url("https://res.cloudinary.com/dhar8ajns/image/upload/v1772262509/6dcaf38d-db53-4e3e-ad76-592ed4ff3b73_ipzypu.png");
 }
 
+/* Admin specifically reduced logo */
+.admin-logo .logo-img {
+  height: 28px;
+}
+
+.admin-logo .logo-text {
+  font-size: 1.25rem;
+}
+
 /* Light mode logo */
 body.light .logo-img {
   content: url("https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png");
@@ -880,7 +889,7 @@ body.light .hero-badge {
 
 .hero-title {
   font-family: var(--font-head);
-  font-size: clamp(2.8rem, 9vw, 5.2rem);
+  font-size: clamp(3.8rem, 11vw, 5.2rem);
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: -0.04em;
@@ -1553,8 +1562,8 @@ body.light .featured-card {
 }
 
 .social-link {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1566,6 +1575,11 @@ body.light .featured-card {
   font-weight: 700;
   font-size: 0.85rem;
   transition: var(--transition);
+}
+
+.social-link svg {
+  width: 24px;
+  height: 24px;
 }
 
 .social-link:hover {
@@ -1979,15 +1993,37 @@ body.light .shimmer-banner {
 }
 
 @media (max-width: 768px) {
+  .nav-inner {
+    justify-content: space-between;
+    position: relative;
+    padding: 0 20px;
+  }
 
   .nav-links,
-  .nav-actions .btn-primary {
-    display: none;
+  .nav-actions .btn-primary,
+  #user-button,
+  #sign-in-btn {
+    display: none !important;
+  }
+
+  .nav-inner .logo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .nav-inner .logo-img {
+    height: 34px;
+  }
+
+  .nav-inner .logo-text {
+    font-size: 1.5rem;
   }
 
   .hamburger {
     display: flex;
-    margin-left: auto;
+    margin-left: 0;
+    order: -1;
   }
 
   .hero-stats {
@@ -2006,6 +2042,12 @@ body.light .shimmer-banner {
   .footer-top {
     grid-template-columns: 1fr 1fr;
     gap: 32px;
+  }
+
+  .footer-top>div:nth-child(even) {
+    align-items: flex-end;
+    text-align: right;
+    padding-right: 20px;
   }
 
   .footer-bottom {
@@ -2030,6 +2072,12 @@ body.light .shimmer-banner {
 
   .footer-top {
     grid-template-columns: 1fr;
+  }
+
+  .footer-top>div:nth-child(even) {
+    align-items: flex-start;
+    text-align: left;
+    padding-right: 0;
   }
 
   .hero-stats {

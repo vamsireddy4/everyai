@@ -11,8 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script async crossorigin="anonymous"
-        data-clerk-publishable-key="pk_live_Y2xlcmsuZXZlcnktYWkuY29tJA"
+    <script async crossorigin="anonymous" data-clerk-publishable-key="pk_live_Y2xlcmsuZXZlcnktYWkuY29tJA"
         src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
     <style>
         .prompt-page {
@@ -95,7 +94,8 @@
             background: #ffffff;
         }
     </style>
-    <link rel="icon" type="image/png" href="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png">
+    <link rel="icon" type="image/png"
+        href="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png">
 </head>
 
 <body id="body">
@@ -107,7 +107,9 @@
     <nav class="navbar" id="navbar">
         <div class="nav-inner">
             <a href="index.html" class="logo" id="logo-link">
-                <span class="logo-icon"><img src="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png" alt="EveryAI Logo" class="logo-img"></span>
+                <span class="logo-icon"><img
+                        src="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png"
+                        alt="EveryAI Logo" class="logo-img"></span>
                 <span class="logo-text">Every<span class="logo-accent">AI</span></span>
             </a>
 
@@ -166,7 +168,9 @@
             <div class="footer-top">
                 <div class="footer-brand">
                     <a href="index.html" class="logo">
-                        <span class="logo-icon"><img src="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png" alt="EveryAI Logo" class="logo-img"></span>
+                        <span class="logo-icon"><img
+                                src="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png"
+                                alt="EveryAI Logo" class="logo-img"></span>
                         <span class="logo-text">Every<span class="logo-accent">AI</span></span>
                     </a>
                     <p class="footer-tagline">The ultimate directory of AI-powered tools and apps.</p>
@@ -205,40 +209,6 @@
 
     <script type="module">
         import { convex } from './convex-client.js';
-
-        // Theme Logic
-        const themeToggle = document.getElementById('theme-toggle');
-        const body = document.getElementById('body');
-
-        if (localStorage.getItem('theme') === 'light') {
-            body.classList.add('light');
-            themeToggle.checked = true;
-        }
-
-        themeToggle.addEventListener('change', () => {
-            const isLight = themeToggle.checked;
-            body.classList.toggle('light', isLight);
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
-        });
-
-        // Navbar scroll effect
-        window.addEventListener('scroll', () => {
-            const navbar = document.getElementById('navbar');
-            if (window.scrollY > 50) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
-        });
-
-        // Hamburger Menu Logic
-        const hamburger = document.getElementById('hamburger');
-        const mobileMenu = document.getElementById('mobile-menu');
-
-        hamburger?.addEventListener('click', () => {
-            hamburger.classList.toggle('open');
-            mobileMenu.classList.toggle('open');
-        });
 
         // Load Prompt Data
         async function loadPrompt() {

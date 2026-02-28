@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | EveryAI – Get in Touch</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script async crossorigin="anonymous"
+        data-clerk-publishable-key="pk_live_Y2xlcmsuZXZlcnktYWkuY29tJA"
+        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
+    <style>
+        .contact-page {
+            padding: 160px 20px 100px;
+            background: var(--bg-base);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .contact-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* ── Header ── */
+        .contact-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .contact-header h1 {
+            font-family: var(--font-head);
+            font-size: 5rem;
+            font-weight: 800;
+            letter-spacing: -3px;
+            margin: 0;
+            line-height: 1.1;
+        }
+
+        .contact-header p {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            margin-top: 40px;
+            font-weight: 500;
+            opacity: 0.8;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ── Form ── */
+        .contact-form-card {
+            background: var(--bg-surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 10;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .contact-header h1 {
+                font-size: 3.5rem;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .field-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 14px 18px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: var(--font-sans);
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-1);
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 0 0 4px rgba(92, 184, 92, 0.1);
+        }
+
+        textarea.input-field {
+            min-height: 160px;
+            resize: vertical;
+        }
+
+        .btn-submit {
+            background: var(--accent-1);
+            color: white;
+            border: none;
+            border-radius: var(--radius-full);
+            padding: 16px 32px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(92, 184, 92, 0.3);
+            filter: brightness(1.1);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-submit svg {
+            transition: transform 0.3s ease;
+        }
+
+        .btn-submit:hover svg {
+            transform: translateX(4px);
+        }
+
+        /* ── Success Toast ── */
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .success-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 50px;
+            text-align: center;
+            max-width: 450px;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .success-card h2 {
+            font-family: var(--font-head);
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .success-card p {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        /* ── Floating elements ── */
+        .floating-glow {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(92, 184, 92, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .glow-1 {
+            top: 10%;
+            left: -100px;
+        }
+
+        .glow-2 {
+            bottom: 10%;
+            right: -100px;
+        }
+    </style>
+    <link rel="icon" type="image/png"
+        href="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png">
+</head>
+
+<body id="body">
+    <!-- Background Glows -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="logo">
+                <span class="logo-icon"><img
+                        src="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png"
+                        alt="EveryAI Logo" class="logo-img"></span>
+                <span class="logo-text">Every<span class="logo-accent">AI</span></span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="blogs.html" class="nav-link">Blogs</a></li>
+                <li><a href="prompts.html" class="nav-link">Prompts</a></li>
+                <li><a href="contact.html" class="nav-link active">Contact Us</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="theme-toggle" aria-label="Toggle theme">
+                        <input type="checkbox" id="theme-toggle" />
+                        <div class="slider-round">
+                            <div class="knob"></div>
+                        </div>
+                    </label>
+                </div>
+                <a href="submit.html" class="btn-primary">Submit Tool</a>
+                <div id="user-button"></div>
+            </div>
+
+            <button class="hamburger" id="hamburger" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobile-menu">
+        <a href="index.html" class="mobile-link">Home</a>
+        <a href="about.html" class="mobile-link">About</a>
+        <a href="blogs.html" class="mobile-link">Blogs</a>
+        <a href="prompts.html" class="mobile-link">Prompts</a>
+        <a href="contact.html" class="mobile-link active">Contact Us</a>
+        <a href="submit.html" class="btn-primary mobile-cta">Submit Tool</a>
+    </div>
+
+    <main class="contact-page">
+        <div class="floating-glow glow-1"></div>
+        <div class="floating-glow glow-2"></div>
+
+        <div class="contact-container">
+            <header class="contact-header">
+                <h1><span style="color: var(--text-primary);">Contact</span> <span
+                        style="color: var(--accent-1);">Us</span></h1>
+                <p>Have a question about a tool? Want to partner with us? Or just want to say hello? Drop us a message
+                    below.</p>
+            </header>
+
+            <div class="contact-form-card">
+                <form id="contact-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="field-label" for="name">Full Name</label>
+                            <input type="text" id="name" class="input-field" placeholder="Your name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="field-label" for="email">Email Address</label>
+                            <input type="email" id="email" class="input-field" placeholder="your@email.com" required>
+                        </div>
+                        <div class="form-group full">
+                            <label class="field-label" for="subject">Subject</label>
+                            <input type="text" id="subject" class="input-field" placeholder="How can we help?" required>
+                        </div>
+                        <div class="form-group full">
+                            <label class="field-label" for="message">Message</label>
+                            <textarea id="message" class="input-field" placeholder="Write your message here..."
+                                required></textarea>
+                        </div>
+                        <div class="form-group full">
+                            <button type="submit" id="submit-btn" class="btn-submit">
+                                Send Message
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <a href="index.html" class="logo">
+                        <span class="logo-icon"><img
+                                src="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png"
+                                alt="EveryAI Logo" class="logo-img"></span>
+                        <span class="logo-text">Every<span class="logo-accent">AI</span></span>
+                    </a>
+                    <p class="footer-tagline">The ultimate directory of AI-powered tools and apps.</p>
+                    <div class="footer-socials">
+                        <a href="https://www.linkedin.com/company/every-ai-com/" target="_blank"
+                            class="social-link linkedin" title="Follow us on LinkedIn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="currentColor">
+                                <path
+                                    d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-links-group">
+                    <h4>Directory</h4>
+                    <a href="index.html#apps">All Tools</a>
+                    <a href="categories.html">All Categories</a>
+                    <a href="submit.html">Submit App</a>
+                </div>
+                <div class="footer-links-group">
+                    <h4>Company</h4>
+                    <a href="index.html">Home</a>
+                    <a href="about.html">About</a>
+                    <a href="blogs.html">Blogs</a>
+                    <a href="prompts.html">Prompts</a>
+                    <a href="contact.html">Contact Us</a>
+                </div>
+                <div class="footer-links-group">
+                    <h4>Legal</h4>
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-of-service.html">Terms of Service</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 EveryAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Success Overlay -->
+    <div class="success-overlay" id="success-overlay">
+        <div class="success-card">
+            <span class="success-icon">🎉</span>
+            <h2>Message Sent!</h2>
+            <p>Thank you for reaching out. Our team will get back to you as soon as possible.</p>
+            <button class="btn-submit" onclick="closeSuccess()">Back to Home</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { convex } from './convex-client.js';
+
+        // Theme and Mobile Menu logic
+        const body = document.getElementById('body');
+        const themeToggle = document.getElementById('theme-toggle');
+        const hamburger = document.getElementById('hamburger');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        // Load theme
+        if (localStorage.getItem('theme') === 'light') {
+            body.classList.add('light');
+            if (themeToggle) themeToggle.checked = true;
+        }
+
+        themeToggle?.addEventListener('change', () => {
+            const isLight = themeToggle.checked;
+            body.classList.toggle('light', isLight);
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        });
+
+        hamburger?.addEventListener('click', () => {
+            hamburger.classList.toggle('open');
+            mobileMenu.classList.toggle('open');
+        });
+
+        // Form Handling
+        const contactForm = document.getElementById('contact-form');
+        const successOverlay = document.getElementById('success-overlay');
+
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submit-btn');
+            const originalContent = submitBtn.innerHTML;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Sending...';
+
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                // Submit to Convex
+                await convex.mutation("messages:sendMessage", formData);
+
+                successOverlay.style.display = 'flex';
+                contactForm.reset();
+            } catch (err) {
+                alert('Oops! Something went wrong. Please try again.');
+                console.error(err);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalContent;
+            }
+        });
+
+        window.closeSuccess = () => {
+            window.location.href = 'index.html';
+        };
+
+        // Scroll effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // ── Clerk User Button ──────────────────────────────────────────
+        async function initClerk() {
+            if (!window.Clerk) { setTimeout(initClerk, 100); return; }
+            await window.Clerk.load();
+
+            const userButtonDiv = document.getElementById('user-button');
+            const signInBtn = document.getElementById('sign-in-btn');
+
+            if (window.Clerk.user) {
+                document.body.classList.add('clerk-signed-in');
+                if (signInBtn) signInBtn.style.display = 'none';
+                if (userButtonDiv) {
+                    window.Clerk.mountUserButton(userButtonDiv, {
+                        afterSignOutUrl: '/index.html',
+                        customMenuItems: [
+                            {
+                                label: "My Tools",
+                                href: "/my-tools.html",
+                                mountIcon: (el) => { el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>'; },
+                                unmountIcon: () => { }
+                            },
+                            {
+                                label: "Settings",
+                                href: "/profile.html",
+                                mountIcon: (el) => { el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>'; },
+                                unmountIcon: () => { }
+                            }
+                        ],
+                        appearance: {
+                            elements: {
+                                userButtonPopoverActionButton__manageAccount: { display: 'none' },
+                                userButtonAvatarBox: { width: '32px', height: '32px' }
+                            }
+                        }
+                    });
+                }
+            } else {
+                document.body.classList.add('clerk-signed-out');
+                if (userButtonDiv) userButtonDiv.style.display = 'none';
+            }
+        }
+        initClerk();
+    </script>
+</body>
+
+</html>

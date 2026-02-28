@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Profile | EveryAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-page {
+            padding: 120px 20px 60px;
+            min-height: 100vh;
+            background: var(--bg-base);
+        }
+
+        .admin-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* ── Profile Layout ── */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 32px;
+        }
+
+        @media (max-width: 768px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ── Profile Sidebar ── */
+        .profile-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .profile-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .avatar-wrapper {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            border: 3px solid var(--accent-1);
+            padding: 4px;
+            position: relative;
+        }
+
+        .profile-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--bg-card);
+        }
+
+        .btn-edit-avatar {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: var(--accent-1);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid var(--bg-surface);
+            transition: var(--transition);
+        }
+
+        .btn-edit-avatar:hover {
+            transform: scale(1.1);
+        }
+
+        .profile-card h2 {
+            font-family: var(--font-head);
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+
+        .profile-role {
+            font-size: 0.85rem;
+            color: var(--accent-1);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* ── Settings Content ── */
+        .settings-content {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .settings-section {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .section-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-header h3 {
+            font-family: var(--font-head);
+            font-size: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .section-header svg {
+            color: var(--accent-1);
+        }
+
+        .section-body {
+            padding: 32px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 640px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 640px) {
+            .full-width {
+                grid-column: span 1;
+            }
+        }
+
+        .field-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .input-field {
+            padding: 12px 16px;
+            background: var(--bg-base);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-1);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(92, 184, 92, 0.1);
+        }
+
+        .section-footer {
+            padding: 20px 32px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            text-align: right;
+        }
+
+        /* ── Auth Overlay ── */
+        #admin-auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-base);
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .auth-card {
+            background: var(--bg-surface);
+            padding: 48px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            width: 90%;
+            max-width: 450px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            position: relative;
+            z-index: 501;
+        }
+
+        /* ── Navigation ── */
+        .profile-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        .profile-trigger {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .profile-trigger:hover {
+            border-color: var(--accent-1);
+            background: var(--bg-card-hover);
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 12px;
+            width: 200px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            padding: 8px;
+            display: none;
+            z-index: 1100;
+        }
+
+        .profile-dropdown.show {
+            display: block;
+            animation: dropdownFade 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes dropdownFade {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+        }
+
+        .dropdown-item:hover {
+            color: var(--text-primary);
+            background: var(--bg-card);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 8px 0;
+        }
+
+        .dropdown-item.logout {
+            color: #ef4444;
+        }
+    </style>
+    <script async crossorigin="anonymous"
+        data-clerk-publishable-key="pk_live_Y2xlcmsuZXZlcnktYWkuY29tJA"
+        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
+    <link rel="icon" type="image/png" href="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png">
+</head>
+
+<body id="body">
+    <!-- Auth Overlay -->
+    <div id="admin-auth-overlay"
+        style="display: none; position: fixed; inset: 0; background: var(--bg-base); z-index: 500; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
+        <div style="position: relative; z-index: 501;">
+            <div id="clerk-sign-in"></div>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="logo" id="logo-link">
+                <span class="logo-icon"><img src="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png" alt="EveryAI Logo" class="logo-img"></span>
+                <span class="logo-text">Every<span class="logo-accent">AI</span> <span
+                        style="font-size:0.7rem; opacity:0.5; margin-left:4px">ADMIN</span></span>
+            </a>
+
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="blogs.html" class="nav-link">Blogs</a></li>
+                <li><a href="prompts.html" class="nav-link">Prompts</a></li>
+                <li><a href="index.html" class="nav-link">Contact Us</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="theme-toggle"><input type="checkbox" id="theme-toggle" />
+                        <div class="slider-round">
+                            <div class="knob"></div>
+                        </div>
+                    </label>
+                </div>
+
+                <div id="clerk-admin-user-button"></div>
+            </div>
+
+            <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+        </div>
+    </nav>
+
+    <main class="admin-page">
+        <div class="admin-container">
+            <div class="profile-grid">
+                <!-- Sidebar -->
+                <aside class="profile-sidebar">
+                    <div class="profile-card">
+                        <div class="avatar-wrapper"
+                            style="width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--accent-1); padding: 4px; position: relative; margin: 0 auto 20px;">
+                            <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=Oliver" alt="Admin Avatar"
+                                class="profile-avatar" id="display-avatar"
+                                style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: var(--bg-card);">
+                            <label for="avatar-upload"
+                                style="position: absolute; bottom: 0; right: 0; background: var(--accent-1); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid var(--bg-surface); transition: var(--transition);">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
+                                    </path>
+                                    <circle cx="12" cy="13" r="4"></circle>
+                                </svg>
+                            </label>
+                            <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+                        </div>
+
+                        <h2 id="display-name"
+                            style="margin-top: 10px; font-family: var(--font-head); font-size: 1.5rem; margin-bottom: 4px; color: var(--text-primary);">
+                            Admin User</h2>
+                        <span class="profile-role"
+                            style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; display: block;">Super
+                            Admin</span>
+
+                        <button class="btn-primary"
+                            style="width: 100%; background: #ef4444; border-color: #ef4444; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4); margin-top: 24px;"
+                            onclick="logout()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                            Logout
+                        </button>
+                    </div>
+                </aside>
+
+                <!-- Content -->
+                <div class="settings-content">
+                    <!-- Profile Info -->
+                    <div class="settings-section">
+                        <div class="section-header">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <h3>Personal Information</h3>
+                        </div>
+                        <div class="section-body">
+                            <form id="profile-info-form" class="form-grid">
+                                <div class="form-group">
+                                    <label class="field-label">Full Name</label>
+                                    <input type="text" class="input-field" value="Admin User" id="user-name">
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-label">Email Address</label>
+                                    <input type="email" class="input-field" value="tradephani@gmail.com" readonly
+                                        style="opacity: 0.7; cursor: not-allowed;">
+                                </div>
+                                <div class="form-group full-width">
+                                    <label class="field-label">Short Bio</label>
+                                    <textarea class="input-field" id="user-bio"
+                                        style="height: 100px; resize: none;">Managing the ultimate AI directory at EveryAI. Exploring the limits of agentic workflows.</textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="section-footer">
+                            <button class="btn-primary" onclick="saveAdminProfile()">Save Changes</button>
+                        </div>
+                    </div>
+
+                    <!-- Security -->
+                    <div class="settings-section">
+                        <div class="section-header">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <h3>Account Security</h3>
+                        </div>
+                        <div class="section-body">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="field-label">Current Password</label>
+                                    <input type="password" class="input-field" placeholder="••••••••">
+                                </div>
+                                <div class="form-group">
+                                    <label class="field-label">New Password</label>
+                                    <input type="password" class="input-field"
+                                        placeholder="Leave blank to keep current">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="section-footer">
+                            <button class="btn-primary">Update Security</button>
+                        </div>
+                    </div>
+
+                    <!-- Notifications -->
+                    <div class="settings-section">
+                        <div class="section-header">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            </svg>
+                            <h3>Notifications</h3>
+                        </div>
+                        <div class="section-body">
+                            <div style="display: flex; flex-direction: column; gap: 16px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <div>
+                                        <div style="font-weight: 600; color: var(--text-primary);">New Tool Alerts</div>
+                                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Get notified when
+                                            a new tool is submitted</div>
+                                    </div>
+                                    <label class="theme-switch"><input type="checkbox" checked />
+                                        <div class="slider-round">
+                                            <div class="knob"></div>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <div>
+                                        <div style="font-weight: 600; color: var(--text-primary);">Security
+                                            Notifications</div>
+                                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Important alerts
+                                            about your admin session</div>
+                                    </div>
+                                    <label class="theme-switch"><input type="checkbox" checked />
+                                        <div class="slider-round">
+                                            <div class="knob"></div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" style="position: relative; z-index: 600;">
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <a href="index.html" class="logo"><span class="logo-icon"><img src="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png"
+                                alt="EveryAI Logo" class="logo-img"></span><span class="logo-text">Every<span
+                                class="logo-accent">AI</span></span></a>
+                    <p class="footer-tagline">The ultimate directory of AI-powered tools and apps.</p>
+                </div>
+                <div class="footer-links-group">
+                    <h4>Directory</h4><a href="index.html#apps">All Tools</a><a href="categories.html">All
+                        Categories</a><a href="submit.html">Submit App</a><a href="admin.html" id="admin-dashboard-link"
+                        style="display: none;">Admin Dashboard</a>
+                </div>
+                <div class="footer-links-group">
+                    <h4>Company</h4>
+                    <a href="index.html">Home</a>
+                    <a href="about.html">About</a>
+                    <a href="blogs.html">Blogs</a>
+                    <a href="prompts.html">Prompts</a>
+                    <a href="contact.html">Contact Us</a>
+                </div>
+                <div class="footer-links-group">
+                    <h4>Legal</h4>
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-of-service.html">Terms of Service</a>
+                    <a href="cookie-policy.html">Cookie Policy</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 EveryAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Profile Specific Logic
+            const avatarUpload = $('avatar-upload');
+            const displayAvatar = $('display-avatar');
+
+            avatarUpload?.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        displayAvatar.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            const userName = $('user-name');
+            const displayName = $('display-name');
+            userName?.addEventListener('input', () => {
+                displayName.textContent = userName.value || 'Admin User';
+            });
+        });
+    </script>
+</body>
+
+</html>

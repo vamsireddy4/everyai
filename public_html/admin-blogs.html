@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Blogs | EveryAI Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .admin-page {
+            padding: 120px 20px 60px;
+            min-height: 100vh;
+            background: var(--bg-base);
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* ── Auth Overlay ── */
+        #admin-auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-base);
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .auth-card {
+            background: var(--bg-surface);
+            padding: 48px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            width: 90%;
+            max-width: 450px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            position: relative;
+            z-index: 501;
+        }
+
+        /* ── Content Box ── */
+        .content-box {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 32px;
+        }
+
+        .box-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .box-header h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-family: var(--font-head);
+        }
+
+        /* ── Blog Form ── */
+        .blog-form {
+            padding: 32px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .blog-form .full-width {
+            grid-column: span 2;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .field-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .input-field {
+            padding: 12px 16px;
+            background: var(--bg-base);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-1);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(92, 184, 92, 0.1);
+        }
+
+        .blog-form textarea {
+            height: 250px;
+            resize: vertical;
+        }
+
+        @media (max-width: 768px) {
+            .blog-form {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+        }
+
+        /* ── Image Upload Handling ── */
+        .image-selection-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .img-tab {
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            transition: var(--transition);
+        }
+
+        .img-tab.active {
+            background: var(--accent-1);
+            color: white;
+            border-color: var(--accent-1);
+        }
+
+        .image-preview-container {
+            width: 100%;
+            height: 200px;
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-md);
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg-base);
+        }
+
+        .image-preview-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .preview-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .hidden-input {
+            display: none;
+        }
+
+        /* ── Traffic Chart ── */
+        .chart-container {
+            padding: 24px;
+            height: 400px;
+        }
+
+        #trafficChart {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+        }
+
+        /* ── Header Stats ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--bg-surface);
+            padding: 24px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stat-card .label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-family: var(--font-head);
+        }
+
+        .stat-card .trend,
+        .stat-card .stat-trend {
+            font-size: 0.8rem;
+            color: #5cb85c;
+            font-weight: 500;
+        }
+
+        .stat-trend {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .trend-up {
+            color: #5cb85c !important;
+        }
+
+        .trend-down {
+            color: #ef4444 !important;
+        }
+
+        .btn-filter {
+            background: #ffffff;
+            color: #000000;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-filter.active {
+            background: var(--accent-1) !important;
+            color: #ffffff !important;
+            border-color: var(--accent-1) !important;
+            box-shadow: 0 4px 12px rgba(92, 184, 92, 0.2);
+        }
+
+        body.light .btn-filter {
+            background: #ffffff;
+            border-color: #ddd;
+        }
+
+        /* ── Profile Dropdown ── */
+        .profile-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        .profile-trigger {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .profile-trigger:hover {
+            border-color: var(--accent-1);
+            background: var(--bg-card-hover);
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 12px;
+            width: 200px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            padding: 8px;
+            display: none;
+            z-index: 1100;
+        }
+
+        .profile-dropdown.show {
+            display: block;
+            animation: dropdownFade 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes dropdownFade {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+        }
+
+        .dropdown-item:hover {
+            color: var(--text-primary);
+            background: var(--bg-card);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 8px 0;
+        }
+
+        .dropdown-item.logout {
+            color: #ef4444;
+        }
+    </style>
+    <script async crossorigin="anonymous"
+        data-clerk-publishable-key="pk_live_Y2xlcmsuZXZlcnktYWkuY29tJA"
+        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
+    <link rel="icon" type="image/png" href="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png">
+</head>
+
+<body id="body">
+    <!-- Auth Overlay -->
+    <div id="admin-auth-overlay"
+        style="display: none; position: fixed; inset: 0; background: var(--bg-base); z-index: 500; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
+        <div style="position: relative; z-index: 501;">
+            <div id="clerk-sign-in"></div>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="logo" id="logo-link">
+                <span class="logo-icon"><img src="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png" alt="EveryAI Logo" class="logo-img"></span>
+                <span class="logo-text">Every<span class="logo-accent">AI</span> <span
+                        style="font-size:0.7rem; opacity:0.5; margin-left:4px">ADMIN</span></span>
+            </a>
+
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="admin.html" class="nav-link">Dashboard</a></li>
+                <li><a href="admin-blogs.html" class="nav-link">Blogs</a></li>
+                <li><a href="admin-prompts.html" class="nav-link">Prompts</a></li>
+                <li><a href="admin-support.html" class="nav-link">Support<span class="msg-badge" id="msg-badge" style="display:none">0</span></a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="theme-toggle"><input type="checkbox" id="theme-toggle" />
+                        <div class="slider-round">
+                            <div class="knob"></div>
+                        </div>
+                    </label>
+                </div>
+
+                <div id="clerk-admin-user-button"></div>
+            </div>
+
+            <button class="hamburger" id="hamburger" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobile-menu">
+        <a href="index.html" class="mobile-link">Home</a>
+        <a href="about.html" class="mobile-link">About</a>
+        <a href="blogs.html" class="mobile-link">Blogs</a>
+        <a href="prompts.html" class="mobile-link">Prompts</a>
+        <a href="index.html" class="mobile-link">Contact Us</a>
+        <div class="dropdown-divider"></div>
+        <a href="admin.html" class="mobile-link">Dashboard</a>
+        <a href="admin-profile.html" class="mobile-link">Profile</a>
+        <a href="admin-prompts.html" class="mobile-link">Manage Prompts</a>
+
+        <button class="btn-primary mobile-cta" onclick="logout()">Logout</button>
+    </div>
+
+    <main class="admin-page">
+        <div class="admin-container">
+            <!-- Navigation Actions -->
+            <div class="dashboard-actions" style="margin-bottom: 24px; display: flex; gap: 12px;">
+                <a href="admin.html" class="btn-sm"
+                    style="background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-primary); text-decoration: none; padding: 10px 20px; border-radius: var(--radius-md); font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 10px; transition: var(--transition); box-shadow: var(--shadow-sm);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="blogs.html" class="btn-sm"
+                    style="background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-primary); text-decoration: none; padding: 10px 20px; border-radius: var(--radius-md); font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 10px; transition: var(--transition); box-shadow: var(--shadow-sm);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                    View Public Blogs
+                </a>
+                <a href="admin-published-blogs.html" class="btn-sm"
+                    style="background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-primary); text-decoration: none; padding: 10px 20px; border-radius: var(--radius-md); font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 10px; transition: var(--transition); box-shadow: var(--shadow-sm);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                    Published Blogs
+                </a>
+                <a href="admin-support.html" class="btn-sm"
+                    style="background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-primary); text-decoration: none; padding: 10px 20px; border-radius: var(--radius-md); font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 10px; transition: var(--transition); box-shadow: var(--shadow-sm);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        <line x1="8" y1="9" x2="16" y2="9"></line>
+                        <line x1="8" y1="13" x2="14" y2="13"></line>
+                    </svg>
+                    Support Messages
+                </a>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="label" id="label-submissions">Total Submissions</span>
+                    <span class="value" id="stat-total">0</span>
+                    <span class="trend stat-trend trend-up" id="trend-submissions">↑ 0 published today</span>
+                </div>
+                <div class="stat-card">
+                    <span class="label" id="label-traffic">Daily Traffic</span>
+                    <span class="value" id="stat-traffic">0</span>
+                    <span class="trend stat-trend trend-up" id="trend-traffic">↑ 0% from previous day</span>
+                </div>
+            </div>
+
+            <!-- Blog Views Chart -->
+            <div class="content-box">
+                <div class="box-header">
+                    <h3>Blog Views Analytics</h3>
+                    <div class="traffic-filters" id="traffic-filters" style="display: flex; gap: 8px;">
+                        <button class="btn-sm btn-filter active" data-range="daily">Daily</button>
+                        <button class="btn-sm btn-filter" data-range="weekly">Weekly</button>
+                        <button class="btn-sm btn-filter" data-range="monthly">Monthly</button>
+                        <button class="btn-sm btn-filter" data-range="yearly">Yearly</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="trafficChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Create Blog Form -->
+            <div id="blog-creation-section" class="content-box">
+                <div class="box-header">
+                    <h3>Create New Blog Post</h3>
+                </div>
+                <form id="blog-post-form" class="blog-form">
+                    <div class="form-group"><label class="field-label">Blog Title</label><input type="text"
+                            id="blog-title" class="input-field" placeholder="Enter post title" required></div>
+                    <div class="form-group"><label class="field-label">Category</label><input type="text"
+                            id="blog-category" class="input-field" placeholder="e.g. AI News, Tutorials" required></div>
+                    <div class="form-group full-width">
+                        <label class="field-label">Blog Header Image</label>
+                        <div class="image-selection-tabs" id="image-selection-tabs">
+                            <div class="img-tab active" data-type="url">Image URL</div>
+                            <div class="img-tab" data-type="upload">Direct Upload</div>
+                        </div>
+
+                        <div id="url-input-group">
+                            <input type="url" id="blog-image" class="input-field"
+                                placeholder="https://images.unsplash.com/..." required>
+                        </div>
+
+                        <div id="upload-input-group" class="hidden-input">
+                            <input type="file" id="blog-image-file" class="input-field" accept="image/*"
+                                style="padding: 8px;">
+                        </div>
+
+                        <div class="image-preview-container" id="image-preview-container">
+                            <div class="preview-placeholder">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                                <span>Image Preview</span>
+                            </div>
+                            <img id="image-preview" src="" alt="Preview">
+                        </div>
+                    </div>
+                    <div class="form-group full-width"><label class="field-label">Short Summary</label>
+                        <textarea id="blog-summary" class="input-field"
+                            placeholder="Brief overview for the preview card" required
+                            style="min-height: 100px;"></textarea>
+                    </div>
+                    <div class="form-group full-width"><label class="field-label">SEO Keywords</label><input type="text"
+                            id="blog-keywords" class="input-field" placeholder="e.g. AI tools, Productivity"></div>
+                    <div class="form-group full-width"><label class="field-label">Main Content (HTML)</label><textarea
+                            id="blog-content" class="input-field" placeholder="Write your blog content here..."
+                            required></textarea></div>
+                    <div class="full-width" style="text-align: right;"><button type="submit" class="btn-primary"
+                            style="padding: 14px 40px; font-size: 1rem; border-radius: var(--radius-md); display: flex; align-items: center; gap: 10px; margin-left: auto;"><svg
+                                width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg> Publish Blog Post</button></div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" style="position: relative; z-index: 600;">
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <a href="index.html" class="logo"><span class="logo-icon"><img src="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png"
+                                alt="EveryAI Logo" class="logo-img"></span><span class="logo-text">Every<span
+                                class="logo-accent">AI</span></span></a>
+                    <p class="footer-tagline">The ultimate directory of AI-powered tools and apps.</p>
+                </div>
+                <div class="footer-links-group">
+                    <h4>Directory</h4><a href="index.html#apps">All Tools</a><a href="categories.html">All
+                        Categories</a><a href="submit.html">Submit App</a><a href="admin.html" id="admin-dashboard-link"
+                        style="display: none;">Admin Dashboard</a>
+                </div>
+                <div class="footer-links-group">
+                    <h4>Company</h4>
+                    <a href="index.html">Home</a>
+                    <a href="about.html">About</a>
+                    <a href="blogs.html">Blogs</a>
+                    <a href="prompts.html">Prompts</a>
+                    <a href="contact.html">Contact Us</a>
+                </div>
+                <div class="footer-links-group">
+                    <h4>Legal</h4>
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-of-service.html">Terms of Service</a>
+                    <a href="cookie-policy.html">Cookie Policy</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 EveryAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="admin.js"></script>
+</body>
+
+</html>
