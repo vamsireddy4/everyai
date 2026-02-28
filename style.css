@@ -14,26 +14,23 @@ body.page-exit {
 @keyframes pageIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
 @keyframes pageOut {
   from {
     opacity: 1;
-    transform: translateY(0);
   }
 
   to {
     opacity: 0;
-    transform: translateY(-8px);
   }
 }
+
 
 /* ── Clerk Auth State (prevents flash of wrong UI) ── */
 #sign-in-btn,
@@ -147,6 +144,7 @@ body.light .bg-glow {
   --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.6);
   --shadow-glow: 0 0 40px rgba(92, 184, 92, 0.3);
+  --shadow-featured: 0 0 25px rgba(92, 184, 92, 0.15);
 
   --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -162,7 +160,8 @@ body.light {
   --bg-elevated: #ffffff;
   --bg-card: rgba(255, 255, 255, 0.7);
   --bg-card-hover: rgba(255, 255, 255, 1);
-  --text-primary: #0f172a;
+  --text-primary: #111827;
+  /* Dark Black */
   --text-secondary: #334155;
   --text-muted: #64748b;
   --border: rgba(92, 184, 92, 0.1);
@@ -170,6 +169,7 @@ body.light {
   --shadow-sm: 0 2px 10px rgba(92, 184, 92, 0.05);
   --shadow-md: 0 10px 30px rgba(92, 184, 92, 0.08);
   --shadow-lg: 0 30px 60px rgba(92, 184, 92, 0.12);
+  --shadow-featured: 0 10px 30px rgba(92, 184, 92, 0.1);
 }
 
 html {
@@ -499,38 +499,40 @@ body.light .knob {
    ================================================================*/
 /* ── Navbar ── */
 .navbar {
-  position: fixed;
-  top: 0;
+  position: fixed !important;
+  top: 0 !important;
   left: 0;
   right: 0;
   height: 80px;
-  display: flex;
+  display: flex !important;
   align-items: center;
-  z-index: 1000;
-  transition: all 0.4s ease;
-  background: transparent;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  z-index: 9999 !important;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--bg-surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  transform: none !important;
 }
 
 body.light .navbar {
-  background: transparent;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .navbar.scrolled {
-  background: rgba(9, 9, 15, 0.4);
   height: 64px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  background: var(--bg-surface);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
 body.light .navbar.scrolled {
-  background: rgba(255, 255, 255, 0.4);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.98) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
+
+
 
 .nav-inner {
   width: 100%;
@@ -545,24 +547,70 @@ body.light .navbar.scrolled {
 .logo {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 2px;
   text-decoration: none;
   flex-shrink: 0;
 }
 
 .logo-icon {
+  display: flex;
+  align-items: center;
   font-size: 1.4rem;
+}
+
+.logo-img {
+  height: 37px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  image-rendering: -webkit-optimize-contrast;
+  /* Dark mode logo (default) */
+  content: url("https://res.cloudinary.com/dhar8ajns/image/upload/v1772262509/6dcaf38d-db53-4e3e-ad76-592ed4ff3b73_ipzypu.png");
+}
+
+/* Light mode logo */
+body.light .logo-img {
+  content: url("https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png");
 }
 
 .logo-text {
   font-family: var(--font-head);
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .logo-accent {
   color: var(--accent-3);
+}
+
+/* ── Unread Message Badge ── */
+.msg-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  padding: 0 5px;
+  margin-left: 5px;
+  vertical-align: middle;
+  line-height: 1;
+  animation: badgePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes badgePop {
+  from {
+    transform: scale(0);
+  }
+
+  to {
+    transform: scale(1);
+  }
 }
 
 .nav-links {
@@ -1266,6 +1314,42 @@ body.light .cat-card:hover {
   transform: translateX(100%);
 }
 
+.featured-card {
+  background: rgba(92, 184, 92, 0.03);
+  border: 1.5px solid rgba(92, 184, 92, 0.2);
+  box-shadow: var(--shadow-featured);
+}
+
+body.light .featured-card {
+  background: rgba(92, 184, 92, 0.05);
+  border-color: rgba(92, 184, 92, 0.2);
+}
+
+.featured-card::before {
+  content: "RECOMMENDED";
+  position: absolute;
+  top: 32px;
+  right: -45px;
+  background: var(--accent-1);
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 6px 0;
+  width: 170px;
+  text-align: center;
+  transform: rotate(45deg);
+  box-shadow: 0 2px 10px rgba(92, 184, 92, 0.2);
+  z-index: 10;
+  letter-spacing: 0.05em;
+  pointer-events: none;
+}
+
+.featured-card:hover {
+  background: rgba(92, 184, 92, 0.06);
+  border-color: var(--accent-1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 25px rgba(92, 184, 92, 0.2);
+}
+
 .app-card-top {
   display: flex;
   align-items: center;
@@ -1325,15 +1409,24 @@ body.light .cat-card:hover {
   border-radius: var(--radius-full);
 }
 
-.app-price.free {
-  background: rgba(16, 185, 129, 0.12);
-  color: #10b981;
+.app-price.PAID {
+  background: var(--accent-1);
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  line-height: 1;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(92, 184, 92, 0.3);
 }
 
-.app-price.paid {
-  background: var(--bg-surface);
-  color: var(--text-primary);
-  border: 1px solid var(--border);
+.app-price.FREE {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
 }
 
 .app-price.freemium {
@@ -1481,6 +1574,59 @@ body.light .cat-card:hover {
   border-color: var(--accent-1);
 }
 
+/* Premium "Natural" Social Buttons (Icon Only) */
+.social-icon-btn.linkedin,
+.share-btn.linkedin,
+.social-link.linkedin {
+  background: transparent !important;
+  color: #0077b5 !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+.social-icon-btn.x,
+.share-btn.twitter,
+.social-link.x {
+  background: transparent !important;
+  color: #000000 !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+body:not(.light) .social-icon-btn.x,
+body:not(.light) .share-btn.twitter,
+body:not(.light) .social-link.x {
+  color: #ffffff !important;
+}
+
+.social-icon-btn.github,
+.share-btn.github,
+.social-link.github {
+  background: transparent !important;
+  color: #1f2937 !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+body:not(.light) .social-icon-btn.github,
+body:not(.light) .share-btn.github,
+body:not(.light) .social-link.github {
+  color: #f3f4f6 !important;
+}
+
+.social-icon-btn:hover,
+.social-link:hover,
+.share-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.2);
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
 .footer-links-group {
   display: flex;
   flex-direction: column;
@@ -1505,6 +1651,43 @@ body.light .cat-card:hover {
 
 .footer-links-group a:hover {
   color: var(--text-primary);
+}
+
+/* Premium Shimmer and Fade effect for Banners */
+.shimmer-banner {
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.01) 25%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0.01) 75%);
+  background-size: 200% 100%;
+  animation: shimmerAnim 2s infinite linear;
+}
+
+body.light .shimmer-banner {
+  background: linear-gradient(90deg,
+      rgba(0, 0, 0, 0.01) 25%,
+      rgba(0, 0, 0, 0.03) 50%,
+      rgba(0, 0, 0, 0.01) 75%);
+  background-size: 200% 100%;
+}
+
+@keyframes shimmerAnim {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.tool-banner-wrap img {
+  transform: scale(1);
+  transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.tool-banner-wrap:hover img {
+  transform: scale(1.02);
 }
 
 .footer-bottom {
@@ -1863,6 +2046,7 @@ body.light .cat-card:hover {
     padding: 24px;
   }
 }
+
 /* ── Hide Clerk branding (Secured by Clerk / Development mode) ── */
 [class*="cl-footer"],
 [class*="cl-internal-b3fm57"],

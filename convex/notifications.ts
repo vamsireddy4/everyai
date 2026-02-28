@@ -32,9 +32,11 @@ export const sendAdminNotification = internalAction({
                 }),
             });
 
-            const { access_token } = await tokenResponse.json();
+            const tokenData = await tokenResponse.json();
+            const { access_token } = tokenData;
 
             if (!access_token) {
+                console.error("Failed to obtain access token from Google. Token Data:", tokenData);
                 throw new Error("Failed to obtain access token from Google.");
             }
 
@@ -63,9 +65,10 @@ export const sendAdminNotification = internalAction({
                 body,
             ].join("\r\n");
 
-            // 3. Send via Gmail API
-            const encodedMessage = Buffer.from(message)
-                .toString("base64")
+            // 3. Send via Gmail API (Base64URL Safe encoding)
+            // Using a helper to ensure compatibility in Convex isolate (no Buffer)
+            const base64 = btoa(unescape(encodeURIComponent(message)));
+            const encodedMessage = base64
                 .replace(/\+/g, "-")
                 .replace(/\//g, "_")
                 .replace(/=+$/, "");

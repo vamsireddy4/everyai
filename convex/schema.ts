@@ -10,13 +10,15 @@ export default defineSchema({
         features: v.string(),
         category: v.string(),
         subcategory: v.string(),
-        partnership: v.string(), // "yes" or "no"
+        planType: v.optional(v.string()), // "free" or "paid"
         transactionId: v.optional(v.string()),
         email: v.string(),
         phone: v.optional(v.string()),
         social: v.optional(v.string()),
+        partnership: v.optional(v.string()),
         status: v.string(), // "pending", "approved", "declined"
         timestamp: v.string(),
+        bannerUrl: v.optional(v.string()),
     }).index("by_status", ["status"]),
 
     profiles: defineTable({
@@ -34,19 +36,49 @@ export default defineSchema({
         title: v.string(),
         slug: v.string(),
         excerpt: v.string(),
-        content: v.string(),
+        content: v.optional(v.string()),
+        contentStorageId: v.optional(v.string()),
         category: v.string(),
         readTime: v.number(),
         imageUrl: v.string(),
         timestamp: v.string()
-    }).index("by_slug", ["slug"]),
+    }).index("by_slug", ["slug"])
+        .index("by_timestamp", ["timestamp"]),
 
-    // ── Analytics: one row per hour-bucket, upserted on each visit ─────
-    // bucket format: "YYYY-MM-DDTHH" in the visitor's LOCAL timezone
-    // e.g. "2026-02-25T14" = 2pm on Feb 25 2026
+    // ── Analytics: Bucketed for performance and separated by type ──────
     analytics: defineTable({
-        bucket: v.string(),    // "YYYY-MM-DDTHH" local time
-        count: v.number(),     // total visits in this hour
-        updatedAt: v.number(), // last visit timestamp (ms)
-    }).index("by_bucket", ["bucket"])
+        type: v.string(), // "website" or "blog"
+        bucket: v.number(), // Start of the hour (ms)
+        count: v.number(),
+    }).index("by_type_bucket", ["type", "bucket"]),
+
+    prompts: defineTable({
+        title: v.string(),
+        content: v.string(),
+        category: v.optional(v.string()),
+        imageUrl: v.optional(v.string()),
+        videoUrl: v.optional(v.string()),
+        timestamp: v.string(),
+    }).index("by_timestamp", ["timestamp"]),
+
+    messages: defineTable({
+        name: v.string(),
+        email: v.string(),
+        subject: v.string(),
+        message: v.string(),
+        timestamp: v.string(),
+    }).index("by_timestamp", ["timestamp"]),
+
+    comments: defineTable({
+        name: v.string(),
+        email: v.string(),
+        website: v.optional(v.string()),
+        comment: v.string(),
+        blogSlug: v.optional(v.string()),
+        blogTitle: v.optional(v.string()),
+        adminReply: v.optional(v.string()),
+        timestamp: v.string(),
+    }).index("by_timestamp", ["timestamp"])
+        .index("by_slug", ["blogSlug"])
 });
+

@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Blog | EveryAI Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script async crossorigin="anonymous"
+        data-clerk-publishable-key="pk_live_Y2xlcmsuZXZlcnktYWkuY29tJA"
+        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
+    <style>
+        :root {
+            --edit-max: 900px;
+        }
+
+        .edit-page {
+            padding: 100px 20px 80px;
+            min-height: 100vh;
+            background: var(--bg-base);
+        }
+
+        .edit-container {
+            max-width: var(--edit-max);
+            margin: 0 auto;
+        }
+
+        /* ── Page Header ── */
+        .edit-page-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 36px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 18px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .back-btn:hover {
+            border-color: var(--accent-1);
+            color: var(--accent-1);
+        }
+
+        .edit-page-title {
+            font-family: var(--font-head);
+            font-size: 1.8rem;
+            color: var(--text-primary);
+        }
+
+        .edit-page-title span {
+            color: var(--accent-1);
+        }
+
+        /* ── Card ── */
+        .edit-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            margin-bottom: 24px;
+        }
+
+        .edit-card-title {
+            font-family: var(--font-head);
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .edit-card-title svg {
+            color: var(--accent-1);
+        }
+
+        /* ── Form ── */
+        .edit-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .edit-form-grid .full {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 640px) {
+            .edit-form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .edit-form-grid .full {
+                grid-column: 1;
+            }
+
+            .edit-card {
+                padding: 24px 16px;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .field-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .field-label .req {
+            color: #ef4444;
+            margin-left: 2px;
+        }
+
+        .input-field {
+            padding: 12px 16px;
+            background: var(--bg-base);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.95rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-1);
+            box-shadow: 0 0 0 3px rgba(92, 184, 92, 0.15);
+        }
+
+        textarea.input-field {
+            resize: vertical;
+            min-height: 120px;
+            font-family: var(--font-sans);
+            line-height: 1.6;
+        }
+
+        #edit-blog-content {
+            min-height: 400px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.88rem;
+            line-height: 1.7;
+        }
+
+        .char-count {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        /* ── Image Preview ── */
+        .image-preview-wrap {
+            margin-top: 12px;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: var(--bg-base);
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-preview-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .image-preview-placeholder {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* ── Image Tabs ── */
+        .image-tabs-container {
+            margin-bottom: 12px;
+        }
+
+        .img-tabs {
+            display: flex;
+            gap: 2px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 4px;
+            width: fit-content;
+            margin-bottom: 16px;
+        }
+
+        .img-tab {
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            color: var(--text-secondary);
+        }
+
+        .img-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .img-tab.active {
+            background: var(--accent-1);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ── Upload Box ── */
+        .upload-box {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-sm);
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .upload-box:hover,
+        .upload-box.dragover {
+            border-color: var(--accent-1);
+            background: rgba(92, 184, 92, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .upload-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .upload-text strong {
+            color: var(--accent-1);
+        }
+
+        .file-info {
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: none;
+        }
+
+        /* ── Actions ── */
+        .edit-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 14px;
+            padding-top: 8px;
+        }
+
+        .btn-cancel {
+            padding: 12px 28px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-cancel:hover {
+            border-color: var(--text-primary);
+            color: var(--text-primary);
+        }
+
+        .btn-save {
+            padding: 12px 32px;
+            background: var(--accent-1);
+            border: none;
+            border-radius: var(--radius-md);
+            color: white;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-save:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        .btn-save:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ── Loading Skeleton ── */
+        .skeleton {
+            background: linear-gradient(90deg, var(--bg-surface) 25%, var(--border) 50%, var(--bg-surface) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: var(--radius-sm);
+            height: 44px;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        /* ── Toast ── */
+        .edit-toast {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            padding: 14px 24px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.95rem;
+            z-index: 9999;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            max-width: 340px;
+        }
+
+        .edit-toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .edit-toast.success {
+            background: #5cb85c;
+            color: white;
+        }
+
+        .edit-toast.error {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* ── Auth ── */
+        #admin-auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-base);
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        body.light .edit-page-title {
+            color: #111;
+        }
+    </style>
+    <link rel="icon" type="image/png" href="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png">
+</head>
+
+<body id="body">
+    <!-- Auth Overlay -->
+    <div id="admin-auth-overlay" style="display: none;">
+        <div id="clerk-sign-in"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="logo">
+                <span class="logo-icon"><img src="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png" alt="EveryAI Logo" class="logo-img"></span>
+                <span class="logo-text">Every<span class="logo-accent">AI</span> <span
+                        style="font-size:0.7rem; opacity:0.5; margin-left:4px">ADMIN</span></span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="admin.html" class="nav-link">Dashboard</a></li>
+                <li><a href="admin-published-blogs.html" class="nav-link">Published Blogs</a></li>
+            </ul>
+            <div class="nav-actions">
+                <div id="clerk-admin-user-button"></div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="edit-page">
+        <div class="edit-container">
+            <!-- Page Header -->
+            <div class="edit-page-header">
+                <button class="back-btn" onclick="history.back()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5M12 5l-7 7 7 7" />
+                    </svg>
+                    Back
+                </button>
+                <h1 class="edit-page-title">Edit <span>Blog Post</span></h1>
+            </div>
+
+            <form id="edit-blog-form">
+                <input type="hidden" id="edit-blog-id">
+
+                <!-- Basic Info Card -->
+                <div class="edit-card">
+                    <div class="edit-card-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                        Basic Information
+                    </div>
+                    <div class="edit-form-grid">
+                        <div class="form-group">
+                            <label class="field-label" for="edit-blog-title">Blog Title<span
+                                    class="req">*</span></label>
+                            <input type="text" id="edit-blog-title" class="input-field"
+                                placeholder="Enter a compelling title…" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="field-label" for="edit-blog-category">Category<span
+                                    class="req">*</span></label>
+                            <input type="text" id="edit-blog-category" class="input-field"
+                                placeholder="e.g. AI Tools, Machine Learning" required>
+                        </div>
+                        <div class="form-group full">
+                            <label class="field-label">Header Image<span class="req">*</span></label>
+
+                            <div class="image-tabs-container">
+                                <div class="img-tabs">
+                                    <div class="img-tab active" data-type="url">Image URL</div>
+                                    <div class="img-tab" data-type="upload">Direct Upload</div>
+                                </div>
+
+                                <!-- URL Tab Content -->
+                                <div id="tab-url" class="tab-content active">
+                                    <input type="text" id="edit-blog-image" class="input-field"
+                                        placeholder="https://example.com/image.jpg">
+                                </div>
+
+                                <!-- Upload Tab Content -->
+                                <div id="tab-upload" class="tab-content">
+                                    <div class="upload-box" id="drop-zone">
+                                        <span class="upload-icon">📁</span>
+                                        <p class="upload-text"><strong>Click to upload</strong> or drag and drop</p>
+                                        <p class="upload-text" style="font-size: 0.8rem; margin-top: 5px;">PNG, JPG,
+                                            WEBP (Max 5MB)</p>
+                                        <input type="file" id="blog-file-input" accept="image/*" style="display: none;">
+                                        <div id="file-name-display" class="file-info"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="image-preview-wrap" id="image-preview-wrap">
+                                <img id="image-preview" alt="Header image preview">
+                                <span class="image-preview-placeholder">Image preview will appear here</span>
+                            </div>
+                        </div>
+                        <div class="form-group full">
+                            <label class="field-label" for="edit-blog-summary">Short Summary / Excerpt<span
+                                    class="req">*</span></label>
+                            <textarea id="edit-blog-summary" class="input-field"
+                                placeholder="Write a brief summary shown in listing pages…" required></textarea>
+                            <div class="char-count" id="summary-count">0 characters</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Card -->
+                <div class="edit-card">
+                    <div class="edit-card-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                            <polyline points="10 9 9 9 8 9" />
+                        </svg>
+                        Main Content
+                    </div>
+                    <div class="form-group">
+                        <label class="field-label" for="edit-blog-content">Article Body<span
+                                class="req">*</span></label>
+                        <textarea id="edit-blog-content" class="input-field"
+                            placeholder="Write your full article content here…" required></textarea>
+                        <div class="char-count" id="content-count">0 characters · ~0 min read</div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="edit-actions">
+                    <button type="button" class="btn-cancel" onclick="history.back()">Cancel</button>
+                    <button type="submit" class="btn-save" id="save-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                            <polyline points="17 21 17 13 7 13 7 21" />
+                            <polyline points="7 3 7 8 15 8" />
+                        </svg>
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Toast -->
+    <div class="edit-toast" id="edit-toast"></div>
+
+    <script type="module" src="admin.js"></script>
+    <script type="module">
+        import { convex } from "./convex-client.js";
+
+        // ── Theme ──
+        const body = document.getElementById('body');
+        if (localStorage.getItem('theme') === 'light') body.classList.add('light');
+
+        // ── Navbar Scroll ──
+        window.addEventListener('scroll', () => {
+            document.getElementById('navbar')?.classList.toggle('scrolled', window.scrollY > 20);
+        }, { passive: true });
+
+        // ── Toast Helper ──
+        function showToast(msg, type = 'success') {
+            const t = document.getElementById('edit-toast');
+            t.textContent = msg;
+            t.className = `edit-toast ${type} show`;
+            setTimeout(() => t.classList.remove('show'), 3500);
+        }
+
+        // ── Image Preview ──
+        const imgInput = document.getElementById('edit-blog-image');
+        const imgEl = document.getElementById('image-preview');
+        const imgPlaceholder = document.querySelector('.image-preview-placeholder');
+
+        function updatePreview(url) {
+            if (url && (url.startsWith('http') || url.startsWith('data:'))) {
+                imgEl.src = url;
+                imgEl.style.display = 'block';
+                if (imgPlaceholder) imgPlaceholder.style.display = 'none';
+            } else {
+                imgEl.style.display = 'none';
+                if (imgPlaceholder) imgPlaceholder.style.display = '';
+            }
+        }
+
+        imgInput.addEventListener('input', () => updatePreview(imgInput.value.trim()));
+
+        // ── Char Counts ──
+        const summaryEl = document.getElementById('edit-blog-summary');
+        const contentEl = document.getElementById('edit-blog-content');
+
+        summaryEl.addEventListener('input', () => {
+            document.getElementById('summary-count').textContent = `${summaryEl.value.length} characters`;
+        });
+
+        contentEl.addEventListener('input', () => {
+            const words = contentEl.value.trim().split(/\s+/).filter(Boolean).length;
+            const mins = Math.max(1, Math.ceil(words / 200));
+            document.getElementById('content-count').textContent = `${contentEl.value.length} characters · ~${mins} min read`;
+        });
+
+        // ── Load Blog by ID from URL ──
+        async function loadBlog() {
+            const params = new URLSearchParams(window.location.search);
+            const blogId = params.get('id');
+            if (!blogId) {
+                showToast('No blog ID provided.', 'error');
+                return;
+            }
+
+            try {
+                const blogs = await convex.query("blogs:getBlogs");
+                const blog = blogs.find(b => b.id === blogId);
+                if (!blog) {
+                    showToast('Blog not found.', 'error');
+                    return;
+                }
+
+                // Populate fields
+                document.getElementById('edit-blog-id').value = blog.id;
+                document.getElementById('edit-blog-title').value = blog.title || '';
+                document.getElementById('edit-blog-category').value = blog.category || '';
+                document.getElementById('edit-blog-image').value = blog.imageUrl || '';
+                document.getElementById('edit-blog-summary').value = blog.excerpt || '';
+                document.getElementById('edit-blog-content').value = blog.content || '';
+
+                // Update UI
+                document.title = `Edit: ${blog.title} | EveryAI Admin`;
+                updatePreview(blog.imageUrl);
+
+                // Trigger char counts
+                summaryEl.dispatchEvent(new Event('input'));
+                contentEl.dispatchEvent(new Event('input'));
+
+                // Fetch full content from storage if needed
+                if (blog.contentUrl && !blog.content) {
+                    try {
+                        const res = await fetch(blog.contentUrl);
+                        const text = await res.text();
+                        contentEl.value = text;
+                        contentEl.dispatchEvent(new Event('input'));
+                    } catch (e) { console.warn('Could not fetch remote content', e); }
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to load blog.', 'error');
+            }
+        }
+
+        // ── Image Tabs & Upload Logic ──
+        let uploadedImageBase64 = null;
+        const tabs = document.querySelectorAll('.img-tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('blog-file-input');
+        const fileNameDisplay = document.getElementById('file-name-display');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+
+                tab.classList.add('active');
+                const type = tab.dataset.type;
+                document.getElementById(`tab-${type}`).classList.add('active');
+
+                if (type === 'url') {
+                    updatePreview(imgInput.value.trim());
+                } else if (uploadedImageBase64) {
+                    updatePreview(uploadedImageBase64);
+                }
+            });
+        });
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            handleFile(file);
+        });
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            handleFile(file);
+        });
+
+        function handleFile(file) {
+            if (!file || !file.type.startsWith('image/')) return;
+
+            fileNameDisplay.textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+            fileNameDisplay.style.display = 'block';
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                uploadedImageBase64 = e.target.result;
+                updatePreview(uploadedImageBase64);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ── Helper to upload assets to Convex Storage ──
+        async function uploadToStorage(content, contentType = "text/plain") {
+            let body = content;
+            if (content.startsWith('data:image/')) {
+                const parts = content.split(';base64,');
+                const byteString = atob(parts[parts.length - 1]);
+                const ab = new ArrayBuffer(byteString.length);
+                const ia = new Uint8Array(ab);
+                for (let i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+                body = new Blob([ab], { type: contentType });
+            }
+
+            const uploadUrl = await convex.mutation("blogs:generateUploadUrl");
+            const response = await fetch(uploadUrl, {
+                method: "POST",
+                headers: { "Content-Type": contentType },
+                body: body
+            });
+            const { storageId } = await response.json();
+            return storageId;
+        }
+
+        // ── Save Handler ──
+        document.getElementById('edit-blog-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const saveBtn = document.getElementById('save-btn');
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 0.8s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Saving…`;
+
+            const id = document.getElementById('edit-blog-id').value;
+            const title = document.getElementById('edit-blog-title').value.trim();
+            const category = document.getElementById('edit-blog-category').value.trim();
+            const excerpt = document.getElementById('edit-blog-summary').value.trim();
+            const content = document.getElementById('edit-blog-content').value;
+
+            // Determine final image
+            const activeTab = document.querySelector('.img-tab.active');
+            let finalImageUrl = (activeTab?.dataset.type === 'upload') ? uploadedImageBase64 : document.getElementById('edit-blog-image').value.trim();
+
+            try {
+                let contentStorageId = undefined;
+                let finalContent = content;
+
+                // 1. Handle Large Content
+                if (content.length > 500000) {
+                    saveBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 0.8s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Uploading content…`;
+                    contentStorageId = await uploadToStorage(content);
+                    finalContent = "";
+                }
+
+                // 2. Handle Large Images / Uploaded Images
+                if (finalImageUrl && finalImageUrl.startsWith('data:image/')) {
+                    saveBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 0.8s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Uploading image…`;
+                    const imgStorageId = await uploadToStorage(finalImageUrl, "image/png");
+                    finalImageUrl = imgStorageId;
+                }
+
+                await convex.mutation("blogs:updateBlog", {
+                    id, title, category,
+                    imageUrl: finalImageUrl || 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e',
+                    excerpt,
+                    content: finalContent,
+                    contentStorageId: contentStorageId,
+                    slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
+                    readTime: Math.max(1, Math.ceil(content.trim().split(/\s+/).length / 200))
+                });
+
+                showToast('✅ Blog updated successfully!', 'success');
+                setTimeout(() => window.location.href = 'admin-published-blogs.html', 1500);
+            } catch (err) {
+                console.error(err);
+                showToast('❌ Failed to save: ' + err.message, 'error');
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Changes`;
+            }
+        });
+
+        // Spinner keyframe
+        const style = document.createElement('style');
+        style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+        document.head.appendChild(style);
+
+        loadBlog();
+    </script>
+</body>
+
+</html>

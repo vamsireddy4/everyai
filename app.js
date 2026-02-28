@@ -9,56 +9,99 @@
 import { convex } from './convex-client.js';
 
 // ── Analytics Tracking ─────────────────────────────────────────────
-// Fires on every page load — Convex upserts into the current hour bucket,
-// so the database stays clean (one row per hour) with an accurate visit count.
 (async function trackVisit() {
   try {
-    const now = new Date();
-    const pad = n => String(n).padStart(2, '0');
-    const bucket = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}`;
-    await convex.mutation("analytics:recordVisit", { bucket });
+    const path = window.location.pathname.toLowerCase();
+    const isBlogPage = path.includes('blogs.html') || path.includes('blog-post.html');
+    const isAdminPage = path.includes('admin');
+
+    const isAdminSession = localStorage.getItem('everyai_is_admin') === 'true';
+    if (isAdminSession) return; // Don't track admin browsing ever
+
+    let type;
+    if (isBlogPage && !isAdminPage) {
+      type = 'blog';
+    } else if (!isAdminPage) {
+      type = 'website';
+    } else {
+      return; // Don't record admin page visits
+    }
+    await convex.mutation("analytics:recordVisit", { type });
   } catch (e) { console.error("Analytics failure", e); }
 })();
 
 let APPS = [];
 
 async function loadAppsFromConvex() {
+  // 1. Try Loading from Cache First (Instant Render)
+  const cached = localStorage.getItem('everyai_apps_cache');
+  if (cached) {
+    try {
+      APPS = JSON.parse(cached);
+      console.log("🚀 EveryAI: Instant cache load success.");
+      if (typeof renderApps === 'function' && $('apps-grid')) renderApps();
+    } catch (e) { console.warn("Cache parse failed", e); }
+  }
+
   try {
     const tools = await convex.query("tools:getApprovedTools");
-    APPS = tools.map(t => ({
-      id: t._id,
-      name: t.name,
-      tagline: t.description ? t.description.slice(0, 50) + "..." : "",
-      icon: "🤖",
-      category: t.category,
-      subcategory: t.subcategory,
-      description: t.description || '',
-      features: t.features ? (t.features.includes('\n') ? t.features.split('\n') : t.features.split(',')).map(f => f.trim()).filter(f => f) : [],
-      rating: 5.0,
-      reviews: Math.floor(Math.random() * 1000) + 100, // mock reviews for UI layout
-      price: t.partnership === 'yes' ? "PAID" : "FREE",
-      url: t.url,
-      social: t.social,
-      email: t.email,
-      phone: t.phone,
-      socialLinks: t.social ? (t.social.includes(',') ? t.social.split(',') : [t.social]).map(s => s.trim()) : [],
-      featured: !!t.transactionId,
-      new: true,
-      logo: (() => {
-        try {
-          return `https://www.google.com/s2/favicons?sz=128&domain=${new URL(t.url).hostname}`;
-        } catch (e) { return null; }
-      })(),
-      banner: `https://s0.wp.com/mshots/v1/${encodeURIComponent(t.url || '')}?w=1200`
-    }));
+    const newApps = tools.map(t => {
+      const isMagicTeams = t.name.toLowerCase().includes('magicteams');
+      return {
+        id: t._id,
+        name: t.name,
+        tagline: t.description ? t.description.slice(0, 50) + "..." : "",
+        icon: "🤖",
+        category: t.category,
+        subcategory: t.subcategory,
+        description: t.description || '',
+        features: fList(t.features),
+        rating: 5.0,
+        reviews: Math.floor(Math.random() * 1000) + 100,
+        price: (t.planType === 'paid' || isMagicTeams) ? "PAID" : "FREE",
+        url: t.url,
+        social: t.social,
+        email: t.email,
+        phone: t.phone,
+        socialLinks: t.social ? (t.social.includes(',') ? t.social.split(',') : [t.social]).map(s => s.trim()) : [],
+        featured: t.planType === 'paid' || isMagicTeams,
+        hasSavedBanner: !!t.bannerUrl,
+        logo: (() => {
+          try {
+            return `https://www.google.com/s2/favicons?sz=128&domain=${new URL(t.url).hostname}`;
+          } catch (e) { return null; }
+        })(),
+        banner: t.bannerUrl || `https://api.microlink.io?url=${encodeURIComponent(t.url || '')}&screenshot=true&meta=false&embed=screenshot.url`
+      };
+    });
+
+    // 2. 🗲 Pre-warm Asset Cache (Banners and Favicons for first 15 apps)
+    newApps.slice(0, 15).forEach(a => {
+      if (a.banner) { const i = new Image(); i.src = a.banner; }
+      if (a.logo) { const i = new Image(); i.src = a.logo; }
+    });
+
+    // 3. Update if data changed or first load
+    if (JSON.stringify(newApps) !== JSON.stringify(APPS)) {
+      APPS = newApps;
+      localStorage.setItem('everyai_apps_cache', JSON.stringify(APPS));
+      console.log("✅ EveryAI: Backend data synced and cached.");
+      if (typeof renderApps === 'function' && $('apps-grid')) renderApps();
+    }
+
   } catch (err) {
     console.error("Failed to load apps from convex:", err);
   }
 }
 
+function fList(str) {
+  if (!str) return [];
+  return (str.includes('\n') ? str.split('\n') : str.split(',')).map(f => f.trim()).filter(f => f);
+}
+
 // ── Pagination State ──────────────────────────────────────────────
 let currentPage = 1;
-const PAGE_SIZE = 40; // 40 cards per page
+const PAGE_SIZE = 60; // 60 cards per page
 let currentFilter = 'all';
 let currentSort = 'popular';
 let searchQuery = '';
@@ -76,19 +119,29 @@ function iconHTML(app) {
 
 // ── Render Card ───────────────────────────────────────────────────
 function renderAppCard(app) {
+  const featuredClass = app.featured ? 'featured-card' : '';
   return `
-    <div class="app-card reveal" data-id="${app.id}" role="button" tabindex="0">
+    <div class="app-card reveal ${featuredClass}" data-id="${app.id}" role="button" tabindex="0">
       <div class="app-card-top">
         <div class="app-icon-sm logo-wrap">${iconHTML(app)}</div>
         <div>
-          <div class="app-name">${app.name}${app.new ? ' <span class="card-tag" style="font-size:0.65rem;margin-left:4px">NEW</span>' : ''}</div>
+          ${app.featured ? '<div class="featured-badge" style="font-size:0.6rem; color:var(--accent-1); font-weight:800; letter-spacing:0.05em; margin-bottom:2px">FEATURED</div>' : ''}
+          <div class="app-name">${app.name}</div>
           <div class="app-category-label">${app.category}</div>
         </div>
       </div>
       <p class="app-desc">${app.description.length > 95 ? app.description.slice(0, 95) + '...' : app.description}</p>
       <div class="app-card-footer">
-        <span class="app-price ${app.price}">${app.price.charAt(0).toUpperCase() + app.price.slice(1)}</span>
-        <button class="app-visit-btn" data-url="${app.url}">Visit →</button>
+        <span class="app-price ${app.price}">
+          ${app.price === 'PAID' ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : app.price}
+        </span>
+        <a href="${app.url}" 
+           target="_blank" 
+           rel="${app.featured ? 'noopener' : 'nofollow noopener'}" 
+           class="app-visit-btn" 
+           onclick="event.stopPropagation()">
+           Visit →
+        </a>
       </div>
     </div>
   `;
@@ -99,11 +152,13 @@ function getFilteredApps() {
   let apps = [...APPS];
 
   if (currentFilter !== 'all') {
-    const filter = currentFilter.toLowerCase().replace(/-/g, ' ');
+    const normalize = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, ' ').trim();
+    const filterNorm = normalize(currentFilter);
+
     apps = apps.filter(a =>
-      a.category.toLowerCase() === filter ||
-      (a.tags && a.tags.some(t => t.toLowerCase() === filter)) ||
-      (a.tags && a.tags.some(t => t.toLowerCase().includes(filter)))
+      (a.category && normalize(a.category) === filterNorm) ||
+      (a.subcategory && normalize(a.subcategory) === filterNorm) ||
+      (a.tags && a.tags.some(t => normalize(t) === filterNorm || normalize(t).includes(filterNorm)))
     );
   }
 
@@ -114,6 +169,13 @@ function getFilteredApps() {
       a.description.toLowerCase().includes(q) ||
       (a.tags && a.tags.some(t => t.toLowerCase().includes(q)))
     );
+  }
+
+  // Price filtering (triggered by sort dropdown)
+  if (currentSort === 'free') {
+    apps = apps.filter(a => a.price === 'FREE');
+  } else if (currentSort === 'premium') {
+    apps = apps.filter(a => a.price === 'PAID');
   }
 
   switch (currentSort) {
@@ -130,6 +192,23 @@ function getFilteredApps() {
       apps.sort((a, b) => (b.reviews || 0) - (a.reviews || 0));
       break;
   }
+
+  // Sorting priority: 
+  // 1. MagicTeams (Always first)
+  // 2. Featured/Paid tools
+  // 3. Free tools
+  apps.sort((a, b) => {
+    const aIsMagic = a.name.toLowerCase().includes('magicteams');
+    const bIsMagic = b.name.toLowerCase().includes('magicteams');
+
+    if (aIsMagic && !bIsMagic) return -1;
+    if (!aIsMagic && bIsMagic) return 1;
+
+    if (a.featured && !b.featured) return -1;
+    if (!a.featured && b.featured) return 1;
+    return 0;
+  });
+
   return apps;
 }
 
@@ -157,13 +236,19 @@ function renderApps() {
 
   document.querySelectorAll('.app-card').forEach(card => {
     io.observe(card);
+    const id = card.dataset.id;
+    const app = APPS.find(a => a.id === id);
+
+    // Proactive banner saving for the current page
+    if (app && !app.hasSavedBanner && app.banner) {
+      convex.mutation("tools:saveBanner", { id: app.id, bannerUrl: app.banner })
+        .then(() => { app.hasSavedBanner = true; })
+        .catch(e => console.error("Proactive banner save failed", e));
+    }
+
     card.addEventListener('click', e => {
-      if (e.target.classList.contains('app-visit-btn')) return;
+      if (e.target.closest('.app-visit-btn')) return;
       window.location.href = `tool.html?id=${card.dataset.id}`;
-    });
-    card.querySelector('.app-visit-btn')?.addEventListener('click', e => {
-      e.stopPropagation();
-      window.open(e.target.dataset.url, '_blank');
     });
   });
 
@@ -185,7 +270,7 @@ function updatePaginationUI(current, total) {
       <button class="btn-pagination ${current === 1 ? 'disabled' : ''}" id="prev-page" ${current === 1 ? 'disabled' : ''}>
         ← Previous
       </button>
-      <div class="page-numbers">
+      <div class="page-info">
         Page <strong>${current}</strong> of <span>${total}</span>
       </div>
       <button class="btn-pagination ${current === total ? 'disabled' : ''}" id="next-page" ${current === total ? 'disabled' : ''}>
@@ -301,10 +386,15 @@ async function init() {
     });
   });
 
-  // Navbar Scroll Appereance
+  // Navbar Scroll Logic (Shrink background only)
+  const navbar = $('navbar');
+
   window.addEventListener('scroll', () => {
-    $('navbar')?.classList.toggle('scrolled', window.scrollY > 20);
+    const currentScrollY = window.scrollY;
+    // Toggle "scrolled" class (shrink background)
+    navbar?.classList.toggle('scrolled', currentScrollY > 20);
   }, { passive: true });
+
 
   // Mobile Menu
   const hamburger = $('hamburger');
@@ -315,9 +405,27 @@ async function init() {
   });
 
 
-  // Check if it's Tool Detail Page
+  // Check if it's Tool Detail Page or Filtered Home Page
   const params = new URLSearchParams(window.location.search);
   const toolId = params.get('id');
+  const filterParam = params.get('filter');
+
+  // Handle Filter from URL
+  if (filterParam) {
+    currentFilter = filterParam;
+    // Update UI active state
+    document.querySelectorAll('.filter-btn, .tag').forEach(btn => {
+      const match = btn.dataset.filter === currentFilter;
+      btn.classList.toggle('active', match);
+    });
+    // Dynamically update section title for context
+    const secTitle = document.querySelector('.section-title');
+    if (secTitle) {
+      const displayFilter = filterParam.replace(/-/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      secTitle.innerHTML = `Explore <span class="gradient-text">${displayFilter} Tools</span>`;
+    }
+  }
+
   if ($('tool-details-container') && toolId) {
     await loadAppsFromConvex();
     initDetailPage(toolId);
@@ -343,9 +451,146 @@ async function init() {
     renderApps();
   }
 
+  // Prompts logic (if on prompts page)
+  if ($('dynamic-prompts-list')) {
+    renderPrompts();
+  }
+
   // ── Clerk Initialization ──────────────────────────────────────────
   initClerk();
 }
+
+let ALL_PROMPTS = [];
+
+async function renderPrompts() {
+  const list = $('dynamic-prompts-list');
+  if (!list) return;
+
+  // Category → Unsplash image mapping
+  const categoryImages = {
+    'youtube': 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?auto=format&fit=crop&w=800&q=80',
+    'instagram': 'https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&w=800&q=80',
+    'twitter': 'https://images.unsplash.com/photo-1611605698335-8b1569810432?auto=format&fit=crop&w=800&q=80',
+    'facebook': 'https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?auto=format&fit=crop&w=800&q=80',
+    'copywriting': 'https://images.unsplash.com/photo-1455390582262-044cdead2708?auto=format&fit=crop&w=800&q=80',
+    'marketing': 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
+    'coding': 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
+    'education': 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=800&q=80',
+    'business': 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80',
+    'seo': 'https://images.unsplash.com/photo-1572177812156-58036aae439c?auto=format&fit=crop&w=800&q=80',
+    'email': 'https://images.unsplash.com/photo-1557200134-90327ee9fafa?auto=format&fit=crop&w=800&q=80',
+    'design': 'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=800&q=80',
+    'video': 'https://images.unsplash.com/photo-1536240478700-b869ad10a2eb?auto=format&fit=crop&w=800&q=80',
+    'writing': 'https://images.unsplash.com/photo-1455390582262-044cdead2708?auto=format&fit=crop&w=800&q=80',
+    'productivity': 'https://images.unsplash.com/photo-1484788984921-03950022c9ef?auto=format&fit=crop&w=800&q=80',
+    'sales': 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=800&q=80',
+    'ai': 'https://images.unsplash.com/photo-1677442135703-1787eea5ce01?auto=format&fit=crop&w=800&q=80',
+    'general': 'https://images.unsplash.com/photo-1677442135703-1787eea5ce01?auto=format&fit=crop&w=800&q=80',
+  };
+
+  // Fallback images for unknown categories
+  const fallbackImages = [
+    'https://images.unsplash.com/photo-1677442135703-1787eea5ce01?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=800&q=80',
+  ];
+
+  // 1. Load Prompts from Cache
+  const cached = localStorage.getItem('everyai_prompts_cache');
+  if (cached) {
+    try {
+      ALL_PROMPTS = JSON.parse(cached);
+      displayPrompts(ALL_PROMPTS);
+    } catch (e) { console.warn("Prompt cache fail", e); }
+  }
+
+  try {
+    const freshPrompts = await convex.query("prompts:getPrompts");
+
+    // 2. Preload first few prompt images
+    freshPrompts.slice(0, 8).forEach(p => {
+      if (p.imageUrl) {
+        const img = new Image();
+        img.src = p.imageUrl;
+      }
+    });
+
+    if (JSON.stringify(freshPrompts) !== JSON.stringify(ALL_PROMPTS)) {
+      ALL_PROMPTS = freshPrompts;
+      localStorage.setItem('everyai_prompts_cache', JSON.stringify(ALL_PROMPTS));
+      displayPrompts(ALL_PROMPTS);
+    }
+  } catch (err) {
+    console.error("Failed to load prompts:", err);
+  }
+
+  function displayPrompts(prompts) {
+    if (prompts.length === 0) {
+      list.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--text-muted)">No prompts found matching your search.</div>`;
+      return;
+    }
+
+    list.innerHTML = prompts.map((p, idx) => {
+      // 1. Priority: URL or Upload set by Admin
+      let imgUrl = p.imageUrl;
+
+      // 2. Secondary: Match any keyword in the category string
+      if (!imgUrl) {
+        const categories = (p.category || 'general').toLowerCase().split(/[\s,]+/).map(c => c.trim()).filter(c => c);
+        const match = categories.find(c => categoryImages[c]);
+        imgUrl = match ? categoryImages[match] : categoryImages['general'];
+      }
+
+      // 3. Fallback: Generic pattern if still nothing
+      if (!imgUrl) {
+        imgUrl = fallbackImages[idx % fallbackImages.length];
+      }
+
+      return `
+        <a href="prompt.html?id=${p._id}" class="prompt-card">
+            <img src="${imgUrl}" alt="${p.title}" loading="lazy" />
+            <div class="prompt-card-content">
+                <h3>${p.title}</h3>
+                ${p.category ? `<span style="font-size:0.8rem; color: #5cb85c; font-weight:800; text-transform:uppercase; letter-spacing:0.05em;">${p.category}</span>` : ''}
+            </div>
+        </a>
+      `;
+    }).join('');
+  }
+
+  window.filterPrompts = (query) => {
+    const q = query.toLowerCase().trim();
+    if (!q) {
+      displayPrompts(ALL_PROMPTS);
+      return;
+    }
+
+    const filtered = ALL_PROMPTS.filter(p =>
+      p.title.toLowerCase().includes(q) ||
+      (p.category && p.category.toLowerCase().includes(q))
+    );
+    displayPrompts(filtered);
+  };
+}
+
+
+
+
+window.copyPromptText = (btn) => {
+  const content = btn.dataset.content;
+  navigator.clipboard.writeText(content).then(() => {
+    const originalText = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.style.background = '#5cb85c';
+    setTimeout(() => {
+      btn.textContent = originalText;
+      btn.style.background = '';
+    }, 2000);
+  });
+};
+
 
 /** ── Detail Page Logic (Moved from tool.html) ── */
 function initDetailPage(toolId) {
@@ -361,20 +606,33 @@ function initDetailPage(toolId) {
     return;
   }
 
+  // Auto-save banner if not already saved to DB
+  if (!tool.hasSavedBanner && tool.banner) {
+    convex.mutation("tools:saveBanner", {
+      id: tool.id,
+      bannerUrl: tool.banner
+    }).catch(e => console.error("Auto-save banner failed", e));
+  }
+
   document.title = `${tool.name} | EveryAI`;
 
   // Social Icons Logic
   const socialIconsHTML = (tool.socialLinks || []).map(link => {
-    let icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>'; // default globe
+    let icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>'; // default globe
+    let brandClass = '';
+
     if (link.includes('twitter.com') || link.includes('x.com')) {
-      icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg>';
+      brandClass = 'x';
+      icon = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.004 3.936H5.039z"/></svg>';
     } else if (link.includes('linkedin.com')) {
-      icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>';
+      brandClass = 'linkedin';
+      icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>';
     } else if (link.includes('github.com')) {
-      icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>';
+      brandClass = 'github';
+      icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>';
     }
 
-    return `<a href="${link}" target="_blank" class="social-icon-btn" title="${link}">${icon}</a>`;
+    return `<a href="${link}" target="_blank" class="social-icon-btn ${brandClass}" title="${link}">${icon}</a>`;
   }).join('');
 
   const featuresList = tool.features && tool.features.length > 0 ? tool.features : ['Core Functionality', 'Dynamic AI Logic', 'Modern Interface'];
@@ -416,8 +674,11 @@ function initDetailPage(toolId) {
     </aside>
 
     <div class="tool-content">
-        <div class="tool-banner-wrap" style="margin-bottom:32px; border-radius:24px; overflow:hidden; border:1px solid var(--border); background:#111; aspect-ratio:21/9">
-            <img src="${tool.banner}" alt="${tool.name} Banner" style="width:100%; height:100%; object-fit:cover" onerror="this.src='https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=1200'">
+        <div class="tool-banner-wrap shimmer-banner" style="margin-bottom:32px; border-radius:32px; overflow:hidden; border:1px solid var(--border); background:rgba(0,0,0,0.05); aspect-ratio:16/9; display: flex; align-items: center; justify-content: center; position: relative;">
+            <img src="${tool.banner}" alt="${tool.name} Banner" 
+                 style="width:100%; height:100%; display: block; object-fit: cover; opacity: 0; transition: opacity 0.5s ease;"
+                 onload="this.style.opacity='1'; this.parentElement.classList.remove('shimmer-banner')"
+                 onerror="this.src='https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=1200'; this.style.opacity='1'; this.parentElement.classList.remove('shimmer-banner')">
         </div>
 
         <h1 class="tool-detail-title">${tool.name}</h1>
@@ -452,31 +713,19 @@ async function initClerk() {
   }
 
   try {
-    await window.Clerk.load({
-      appearance: {
-        elements: {
-          // Hide "Secured by Clerk" footer on all Clerk UI surfaces
-          footer: { display: 'none !important' },
-          footerAction: { display: 'none !important' },
-          footerPages: { display: 'none !important' },
-          // Hide "Development mode" badge
-          devBrowser: { display: 'none !important' },
-          'cl-devBrowser': { display: 'none !important' },
-          userButtonPopoverFooter: { display: 'none !important' },
-        }
-      }
-    });
+    await window.Clerk.load();
 
-    // Scrub any Clerk branding injected after page load
-    const clerkBrandingObserver = new MutationObserver(() => {
-      document.querySelectorAll(
-        '[class*="cl-footer"], [class*="cl-internal"], [data-clerk-component="footer"]'
-      ).forEach(el => el.style.setProperty('display', 'none', 'important'));
-    });
-    clerkBrandingObserver.observe(document.body, { childList: true, subtree: true });
+    const AUTHORIZED_EMAILS = ['tradephani@gmail.com', 'everyai.com@gmail.com'];
+    const adminLink = document.getElementById('admin-dashboard-link');
 
     if (window.Clerk.user) {
       const user = window.Clerk.user;
+      const email = user.primaryEmailAddress?.emailAddress?.toLowerCase();
+
+      if (adminLink && AUTHORIZED_EMAILS.includes(email)) {
+        adminLink.style.display = 'block';
+      }
+
       // Initialize or load manual profile
       try {
         const existingProfile = await convex.query("profiles:getProfile", { userId: user.id });
@@ -510,7 +759,7 @@ async function initClerk() {
               el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>';
             },
             unmountIcon: () => { }
-          }
+          },
         ],
         appearance: {
           elements: {

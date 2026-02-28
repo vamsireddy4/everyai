@@ -1,13 +1,27 @@
 // tracker.js — shared visit tracker included by ALL pages
-// Fires on every page load. Convex upserts into the current hour bucket,
-// so the DB stays clean (one row per hour) with an accurate running count.
 import { convex } from './convex-client.js';
 
 (async function trackVisit() {
     try {
-        const now = new Date();
-        const pad = n => String(n).padStart(2, '0');
-        const bucket = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}`;
-        await convex.mutation("analytics:recordVisit", { bucket });
+        const path = window.location.pathname.toLowerCase();
+
+        // Only track blog traffic when users visit public blog pages
+        // Never track admin pages as blog traffic
+        const isBlogPage = (path.includes('blogs.html') || path.includes('blog-post.html'));
+        const isAdminPage = path.includes('admin');
+
+        const isAdminSession = localStorage.getItem('everyai_is_admin') === 'true';
+        if (isAdminSession) return; // Don't track admin browsing ever
+
+        let type;
+        if (isBlogPage && !isAdminPage) {
+            type = 'blog';
+        } else if (!isAdminPage) {
+            type = 'website';
+        } else {
+            return; // Don't track admin page visits at all
+        }
+
+        await convex.mutation("analytics:recordVisit", { type });
     } catch (_) { }
 })();

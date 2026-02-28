@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Tool | EveryAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script async crossorigin="anonymous"
+        data-clerk-publishable-key="pk_live_Y2xlcmsuZXZlcnktYWkuY29tJA"
+        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
+    <style>
+        .edit-page {
+            min-height: 100vh;
+            padding: 120px 20px 80px;
+            background: var(--bg-base);
+        }
+
+        .edit-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .edit-header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .edit-header h1 {
+            font-family: var(--font-head);
+            font-size: clamp(2rem, 5vw, 3rem);
+            color: var(--text-primary);
+            font-weight: 800;
+            letter-spacing: -1.2px;
+            margin-bottom: 8px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .edit-header h1 .title-main {
+            color: var(--text-primary);
+        }
+
+        .edit-header h1 .title-accent {
+            color: var(--accent-1);
+        }
+
+        .edit-header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        .edit-form {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            background: var(--bg-base);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 14px 18px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: var(--transition);
+            font-family: inherit;
+            width: 100%;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-1);
+            box-shadow: 0 0 0 3px rgba(92, 184, 92, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+            opacity: 0.5;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        .btn-save {
+            flex: 2;
+            background: var(--accent-1);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(92, 184, 92, 0.2);
+        }
+
+        .btn-save:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(92, 184, 92, 0.3);
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background: var(--bg-base);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 1rem;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-cancel:hover {
+            background: var(--bg-card);
+        }
+
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-base);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent-1);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .back-nav {
+            max-width: 700px;
+            margin: 0 auto 20px;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            padding: 8px 0;
+        }
+
+        .btn-back:hover {
+            color: var(--accent-1);
+            transform: translateX(-4px);
+        }
+
+        @media (max-width: 640px) {
+            .edit-container {
+                padding: 30px 20px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .edit-header h1 {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+    <link rel="icon" type="image/png" href="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png">
+</head>
+
+<body id="body">
+    <script>
+        (function () {
+            var t = localStorage.getItem('theme');
+            if (t === 'light') document.body.classList.add('light');
+        })();
+    </script>
+
+    <!-- Loader -->
+    <div id="loader">
+        <div class="spinner"></div>
+        <p>Loading tool details...</p>
+    </div>
+
+    <!-- ── Navbar ── -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="logo">
+                <span class="logo-icon"><img src="https://res.cloudinary.com/dhar8ajns/image/upload/v1772261620/b6e4b2aa-4284-4a0d-9603-4bae72ffb715_gq7kqd.png" alt="EveryAI Logo" class="logo-img"></span>
+                <span class="logo-text">Every<span class="logo-accent">AI</span></span>
+            </a>
+            <div class="nav-actions">
+                <div id="user-button"></div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="edit-page">
+        <div class="back-nav">
+            <a href="my-tools.html" class="btn-back">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back to My Tools
+            </a>
+        </div>
+        <div class="edit-container">
+            <div class="edit-header">
+                <h1>
+                    <span class="title-main">Edit Tool</span>
+                    <span class="title-accent">Details</span>
+                </h1>
+                <p>Update your tool's information below</p>
+            </div>
+
+            <form class="edit-form" id="edit-form">
+                <input type="hidden" id="tool-id">
+
+                <div class="form-group">
+                    <label for="name">Tool Name</label>
+                    <input type="text" id="name" class="form-input" placeholder="e.g. Magic Writer" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="url">Website URL</label>
+                    <input type="url" id="url" class="form-input" placeholder="https://example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" class="form-input">
+                        <option value="text">Text</option>
+                        <option value="image">Image</option>
+                        <option value="code">Code</option>
+                        <option value="audio">Audio</option>
+                        <option value="video">Video</option>
+                        <option value="business">Business</option>
+                        <option value="3d">3D</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="subcategory">Subcategory</label>
+                    <select id="subcategory" class="form-input" disabled>
+                        <option value="" disabled selected>Select a subcategory</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Short Description</label>
+                    <textarea id="description" class="form-input" style="min-height: 100px; resize: vertical;"
+                        placeholder="Briefly describe what your tool does..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="features">Key Features (one per line)</label>
+                    <textarea id="features" class="form-input" style="min-height: 120px; resize: vertical;"
+                        placeholder="Feature 1\nFeature 2\nFeature 3" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Contact Email</label>
+                    <input type="email" id="email" class="form-input" placeholder="you@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" class="form-input" placeholder="+1 (234) 567-890">
+                </div>
+
+                <div class="form-group">
+                    <label for="social">LinkedIn/Twitter Profile</label>
+                    <input type="text" id="social" class="form-input" placeholder="https://twitter.com/username">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-save" id="save-btn">Save Changes</button>
+                    <a href="my-tools.html" class="btn-cancel">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script type="module">
+        import { convex } from './convex-client.js';
+        const $ = id => document.getElementById(id);
+
+        const subcategories = {
+            text: ['Copywriting', 'Email Assistant', 'General Writing', 'Summarizer', 'Prompts', 'SEO', 'Social Media Assistant'],
+            image: ['Art', 'Avatars', 'Image Editing', 'Logo Generator', 'Image Generator'],
+            code: ['Code Assistant', 'Developer Tools', 'Low-code/No-code', 'Spreadsheets', 'SQL'],
+            audio: ['Music', 'Text to Speech', 'Transcriber'],
+            video: ['Video Editing', 'Video Generator'],
+            business: ['Customer Support', 'E-commerce', 'Education Assistant', 'Fashion', 'Finance', 'Presentations', 'Productivity', 'Real Estate', 'Sales', 'Startup Tools'],
+            '3d': ['Character Design', 'Environment Gen', 'Model Engine'],
+            other: ['Fitness', 'Fun Tools', 'Gaming', 'Healthcare', 'Life Assistant', 'Religion', 'Research', 'Resources', 'Search Engine', 'Travel']
+        };
+
+        function updateSubcategoryOptions(category, selectedSubValue = '') {
+            const subSelect = $('subcategory');
+            const options = subcategories[category] || [];
+
+            subSelect.innerHTML = '<option value="" disabled selected>Select a subcategory</option>';
+            subSelect.disabled = false;
+
+            options.forEach(sub => {
+                const opt = document.createElement('option');
+                opt.value = sub.toLowerCase().replace(/ /g, '-');
+                opt.textContent = sub;
+                if (opt.value === selectedSubValue) opt.selected = true;
+                subSelect.appendChild(opt);
+            });
+        }
+
+        async function initEdit() {
+            if (!window.Clerk) {
+                setTimeout(initEdit, 100);
+                return;
+            }
+
+            try {
+                await window.Clerk.load();
+                if (!window.Clerk.user) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const toolId = urlParams.get('id');
+
+                if (!toolId) {
+                    alert('No tool ID provided');
+                    window.location.href = 'my-tools.html';
+                    return;
+                }
+
+                const tools = await convex.query("tools:getAllTools");
+                const tool = tools.find(t => t._id === toolId);
+
+                if (!tool) {
+                    alert('Tool not found');
+                    window.location.href = 'my-tools.html';
+                    return;
+                }
+
+                if (tool.userId !== window.Clerk.user.id && tool.email !== window.Clerk.user.primaryEmailAddress.emailAddress) {
+                    alert('Unauthorized access');
+                    window.location.href = 'my-tools.html';
+                    return;
+                }
+
+                // Setup dynamic category/subcategory
+                $('category').addEventListener('change', (e) => {
+                    updateSubcategoryOptions(e.target.value);
+                });
+
+                // Populate form
+                $('tool-id').value = tool._id;
+                $('name').value = tool.name;
+                $('url').value = tool.url;
+                $('category').value = tool.category || 'other';
+                updateSubcategoryOptions($('category').value, tool.subcategory);
+
+                $('description').value = tool.description || '';
+                $('features').value = tool.features || '';
+                $('email').value = tool.email || '';
+                $('phone').value = tool.phone || '';
+                $('social').value = tool.social || '';
+
+                $('loader').style.display = 'none';
+
+                $('edit-form').onsubmit = async (e) => {
+                    e.preventDefault();
+                    const btn = $('save-btn');
+                    btn.disabled = true;
+                    btn.innerText = 'Saving...';
+
+                    try {
+                        let finalUrl = $('url').value;
+                        if (!finalUrl.includes('ref=Every-Ai')) {
+                            finalUrl += (finalUrl.includes('?') ? '&' : '?') + 'ref=Every-Ai';
+                        }
+
+                        const updates = {
+                            id: toolId,
+                            name: $('name').value,
+                            url: finalUrl,
+                            category: $('category').value,
+                            subcategory: $('subcategory').value,
+                            description: $('description').value,
+                            features: $('features').value,
+                            email: $('email').value,
+                            phone: $('phone').value,
+                            social: $('social').value
+                        };
+
+                        await convex.mutation("tools:updateTool", updates);
+                        btn.innerText = '✓ Saved!';
+                        btn.style.backgroundColor = '#22c55e';
+
+                        setTimeout(() => {
+                            window.location.href = 'my-tools.html';
+                        }, 1000);
+                    } catch (err) {
+                        console.error(err);
+                        alert('Failed to save changes: ' + err.message);
+                        btn.disabled = false;
+                        btn.innerText = 'Save Changes';
+                    }
+                };
+
+                const email = window.Clerk.user.primaryEmailAddress.emailAddress.toLowerCase();
+                const AUTHORIZED_EMAILS = ['tradephani@gmail.com', 'everyai.com@gmail.com'];
+
+                window.Clerk.mountUserButton($('user-button'), {
+                    afterSignOutUrl: '/index.html',
+                    customMenuItems: AUTHORIZED_EMAILS.includes(email) ? [
+                        {
+                            label: 'Support',
+                            href: '/admin-support.html',
+                            mountIcon: (el) => {
+                                el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><line x1="8" y1="9" x2="16" y2="9"></line><line x1="8" y1="13" x2="14" y2="13"></line></svg>';
+                            }
+                        }
+                    ] : []
+                });
+
+            } catch (err) {
+                console.error(err);
+                $('loader').innerHTML = '<p style="color:red">Error loading tool. Please refresh.</p>';
+            }
+        }
+
+        initEdit();
+    </script>
+</body>
+
+</html>

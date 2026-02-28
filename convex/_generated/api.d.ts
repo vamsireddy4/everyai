@@ -10,8 +10,11 @@
 
 import type * as analytics from "../analytics.js";
 import type * as blogs from "../blogs.js";
+import type * as comments from "../comments.js";
+import type * as messages from "../messages.js";
 import type * as notifications from "../notifications.js";
 import type * as profiles from "../profiles.js";
+import type * as prompts from "../prompts.js";
 import type * as tools from "../tools.js";
 
 import type {
@@ -23,8 +26,11 @@ import type {
 declare const fullApi: ApiFromModules<{
   analytics: typeof analytics;
   blogs: typeof blogs;
+  comments: typeof comments;
+  messages: typeof messages;
   notifications: typeof notifications;
   profiles: typeof profiles;
+  prompts: typeof prompts;
   tools: typeof tools;
 }>;
 
